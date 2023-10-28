@@ -88,5 +88,7 @@ class CentralizedServer(Thread):
                 return file_lists
             raise FileNotFoundError('Hostname is not found')
     
-                    
+print("Welcome. Server is about to go live")
+server = CentralizedServer(2)
+server.start()        
             

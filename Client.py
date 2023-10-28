@@ -11,15 +11,15 @@ import P2PFetching
 
 class PeerManager:
     def __init__(self):
-        self.file_name = ''
-        self.peer_port = Environment.SERVER_PORT + 200
+        self.file_path = ''
+        self.peer_port = Environment.SERVER_PORT
         print("Started P2P file sharing system")
         
     def P2PServer_start(self):
         while True:
             request = input("""
 Command line support \n
-publish <file_name> <peer_repository_name> \n
+publish <file_path_at_peer> <file_name_at_server> \n
 fetch <file_name> \n
 discover <host_name> \n
 ping <host_name> \n """)
@@ -27,10 +27,9 @@ ping <host_name> \n """)
             message_type = request[0]
             
             if message_type == 'publish':
-                self.peer_port = 3456
-                self.file_name = request[1]
-                self.fetch(self.file_name)
-                P2PFetching.p2p_fetching_start(socket.gethostname(), self.peer_port)
+                self.peer_port = Environment.SERVER_PORT
+                self.file_path = request[1]
+                self.publish()
             elif message_type == 'fetch':
                 self.fetch(request[1])
             elif message_type == 'discover':
@@ -38,12 +37,12 @@ ping <host_name> \n """)
             elif message_type == 'ping':
                 self.ping(request[1])
             else:
-                continue
+                break
     
     def publish(self):
         peer_connection = socket.socket()
         peer_connection.connect(('localhost', self.peer_port))
-        published_stream = ['publish', self.file_name, self.peer_port]
+        published_stream = ['publish', self.file_path, self.peer_port]
         data_stream = pickle.dumps(published_stream)
         peer_connection.send(data_stream)
         peer_state = peer_connection.recv(Environment.PACKET_SIZE)
@@ -53,7 +52,7 @@ ping <host_name> \n """)
     def discover(self, host_name = 'localhost'):
         peer_connection = socket.socket()
         peer_connection.connect((host_name, self.peer_port))
-        discover_request = ['request', host_name]
+        discover_request = ['discover', host_name]
         peer_connection.send(pickle.dumps(discover_request))
         peer_state = pickle.loads(peer_connection.recv(Environment.PACKET_SIZE))
         

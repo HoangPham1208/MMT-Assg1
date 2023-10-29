@@ -1,0 +1,6 @@
+- Login cmd : In progress
+- Fix discover : x
+- Fix fetch : x
+- Chinh sua logic login -> vao he thong: x
+- UI : x
+- Bao cao : x

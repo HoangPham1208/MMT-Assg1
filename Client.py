@@ -34,11 +34,11 @@ ping <host_name>  """)
             if message_type == 'register':
                 self.register(request[1], request[2])
             elif message_type == 'login':
-                pass
+                self.login(request[1], request[2])
             elif message_type == 'publish':
                 self.peer_port = Environment.SERVER_PORT
                 self.file_path = request[1]
-                self.publish()
+                self.publish(self.file_path, request[2])
             elif message_type == 'fetch':
                 self.fetch(request[1])
             elif message_type == 'discover':
@@ -86,10 +86,10 @@ ping <host_name>  """)
             print('Host name is not found in the server')
         return False
     
-    def publish(self):
+    def publish(self, file_path, file_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(('localhost', self.peer_port))
-        published_stream = ['publish', self.file_path, self.peer_port]
+        published_stream = ['publish', file_path, file_name]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
         client_state = client_connection.recv(Environment.PACKET_SIZE)
@@ -106,6 +106,7 @@ ping <host_name>  """)
         
         peer_files = client_state[0]
         peer_file_metadata = client_state[1]
+        print(peer_file_metadata, 'hoka')
         if len(peer_files) == 0:
             print('The host doesn\'t has any files')
         else:

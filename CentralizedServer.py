@@ -24,7 +24,8 @@ class CentralizedServer(Thread):
         self.clientHost = []
         self.clientMetaData = ['host_name', 'host_password',
                                'host_addr', 'host_port', 'host_live']
-        self.fileMetaData = ['host_name', 'file_name', 'date_added']
+        self.fileMetaData = ['host_name',
+                             'host_port', 'file_name', 'date_added']
         print('Connect server at', self.host, 'with port is', self.port)
 
     def run(self):
@@ -34,8 +35,8 @@ class CentralizedServer(Thread):
             #            login <hostname> <password>
             #            discover <hostname>,
             #            ping <hostname>,
-            #            fetch <fname>,
-            #            publish <fname> <lname>,
+            #            fetch <fname> <hostname> <peerport>,
+            #            publish <fname> <lname>, ex: publish C:\Users\ACER\Desktop\quicknote.txt hello.txt
             #            ]
 
             client, client_addr = self.server_socket.accept()
@@ -49,8 +50,11 @@ class CentralizedServer(Thread):
                 print('Client', client_addr[0],
                       'want to register to use the server')
                 self.semaphore.acquire()
+                clientPort = 10000
+                if len(self.clientHost) != 0:
+                    clientPort = self.clientHost[-1]['host_port']+1
                 client_message = self.client_register(
-                    request[1], request[2], client_addr[0], client_addr[1])
+                    request[1], request[2], client_addr[0], clientPort)
                 client.send(pickle.dumps(client_message))
                 self.semaphore.release()
             elif message_type == 'login':
@@ -77,11 +81,11 @@ class CentralizedServer(Thread):
                         'The server is not found your requested hostname'))
                 self.semaphore.release()
             elif message_type == 'publish':
-                print('Client with', client_addr[1], 'is want to share file')
+                print('Client with', str(request[2]), 'want to share file')
                 self.semaphore.acquire()
                 # Check duplicate file name in server
                 print(request)
-                file_name_at_server = request[2]
+                file_name_at_server = request[1]
                 message_to_client = "File Registered Successfully."
                 for index_file in self.files:
                     if index_file['file_name'] == file_name_at_server:
@@ -93,9 +97,10 @@ class CentralizedServer(Thread):
                             file_name_at_server
                         break
                 self.files.insert(0, dict(zip(self.fileMetaData, [str(
-                    self.host), file_name_at_server, str(datetime.now())])))
+                    self.host), request[2], file_name_at_server, str(datetime.now())])))
                 client.send(pickle.dumps(message_to_client))
                 self.semaphore.release()
+
             elif message_type == 'ping':
                 self.semaphore.acquire()
                 host_addr = self.search_client_host_addr(request[1])
@@ -148,7 +153,7 @@ class CentralizedServer(Thread):
                                         )
                                     )
                                )
-        return 'OK'
+        return ['OK', client_port]
 
     def client_login(self, client_host_name, client_password):
 

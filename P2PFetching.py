@@ -1,13 +1,14 @@
 import os
 import pickle
 import socket
+import threading
 from threading import *
 import Environment
 
 
-class P2PFetching(Thread):
+class P2PFetching(threading.Thread):
     def __init__(self, host_name, port_number, maxixum_client_number):
-        Thread.__init__(self)
+        threading.Thread.__init__(self)
         self.host = host_name
         self.semaphore = Semaphore(maxixum_client_number)
         self.port = port_number
@@ -15,7 +16,7 @@ class P2PFetching(Thread):
         self.client_socket.bind((self.host, self.port))
         self.client_socket.listen(maxixum_client_number)
 
-    def fetch(self):
+    def run(self):
         print('Ready to share file')
         while True:
             client, client_addr = self.client_socket.accept()
@@ -23,13 +24,13 @@ class P2PFetching(Thread):
                   client_addr[0], 'port', client_addr[1])
 
             request = pickle.loads(client.recv(
-                Environment.PACKET_SIZE))[0].split()
+                Environment.PACKET_SIZE))
             message_type = request[0]
 
             if message_type == 'fetch':
-                file_path = os.path.join(os.getcwd(), 'repo_2')
+                repo_path = os.path.join(os.getcwd(), 'repo_2')
                 file_name = request[1]
-                file_path = os.path.join(file_path, file_name)
+                file_path = os.path.join(repo_path, file_name)
 
                 self.semaphore.acquire()
                 with open(file_path, 'rb') as sharing_file:

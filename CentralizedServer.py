@@ -1,5 +1,6 @@
 import Environment
 
+import hashlib
 import socket
 import pickle
 import platform
@@ -148,7 +149,7 @@ class CentralizedServer(Thread):
                 return 'DUP'
 
         self.clientHost.append(dict(zip(self.clientMetaData,
-                                        (client_host_name, str(client_password),
+                                        (client_host_name, hashlib.sha256(str(client_password).encode('utf-8')).hexdigest(),
                                          client_addr, client_port, False)
                                         )
                                     )
@@ -156,10 +157,11 @@ class CentralizedServer(Thread):
         return ['OK', client_port]
 
     def client_login(self, client_host_name, client_password):
-
         for client_host in self.clientHost:
             if (client_host['host_name'] == client_host_name):
-                return 'OK' if (client_host['host_password'] == client_password) else 'WRONG_PASSWORD'
+                pass_encode = hashlib.sha256(
+                    str(client_password).encode('utf-8')).hexdigest()
+                return 'OK' if (client_host['host_password'] == pass_encode) else 'WRONG_PASSWORD'
         return 'HOST_NAME_NOT_FOUND'
 
 

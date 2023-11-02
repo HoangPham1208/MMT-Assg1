@@ -3,5 +3,5 @@
 - Fix fetch : x
 - Chinh sua logic login -> vao he thong: x
 - UI : x
-- Bao cao : 
-- adding: sha256 encoding password
+- Bao cao : x
+- adding sha256 encoding password : x

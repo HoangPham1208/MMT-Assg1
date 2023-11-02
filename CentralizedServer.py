@@ -26,6 +26,9 @@ class CentralizedServer(Thread):
                                'host_addr', 'host_port', 'host_live']
         self.fileMetaData = ['host_name',
                              'host_port', 'file_name', 'date_added']
+        admin_data = ['admin', '1', Environment.SERVER_HOST_NAME,
+                      Environment.SERVER_PORT]
+        self.clientHost.append(dict(zip(self.clientMetaData, admin_data)))
         print('Connect server at', self.host, 'with port is', self.port)
 
     def run(self):
@@ -51,7 +54,7 @@ class CentralizedServer(Thread):
                       'want to register to use the server')
                 self.semaphore.acquire()
                 clientPort = 10000
-                if len(self.clientHost) != 0:
+                if len(self.clientHost) != 1:
                     clientPort = self.clientHost[-1]['host_port']+1
                 client_message = self.client_register(
                     request[1], request[2], client_addr[0], clientPort)
@@ -61,7 +64,7 @@ class CentralizedServer(Thread):
                 print('Client', client_addr[0], 'is logging in to the server')
                 self.semaphore.acquire()
                 client_message = self.client_login(request[1], request[2])
-                if client_message == 'OK':
+                if client_message[0] == 'OK':
                     for client_host in self.clientHost:
                         if client_host['host_name'] == request[1]:
                             client_host['host_live'] = True
@@ -69,8 +72,6 @@ class CentralizedServer(Thread):
                 client.send(pickle.dumps(client_message))
                 self.semaphore.release()
             elif message_type == 'discover':
-                print('Client', client_addr[1],
-                      'requests to list files of', request[1])
                 self.semaphore.acquire()
                 try:
                     list_of_files = pickle.dumps(
@@ -80,6 +81,7 @@ class CentralizedServer(Thread):
                     client.send(pickle.dumps(
                         'The server is not found your requested hostname'))
                 self.semaphore.release()
+
             elif message_type == 'publish':
                 print('Client with', str(request[2]), 'want to share file')
                 self.semaphore.acquire()
@@ -87,6 +89,12 @@ class CentralizedServer(Thread):
                 print(request)
                 file_name_at_server = request[1]
                 message_to_client = "File Registered Successfully."
+                host_name = 'localhost'
+
+                for client_host in self.clientHost:
+                    if client_host['host_port'] == request[2]:
+                        host_name = client_host['host_name']
+                        break
                 for index_file in self.files:
                     if index_file['file_name'] == file_name_at_server:
                         file_name_at_server = file_name_at_server.split('.')
@@ -96,9 +104,20 @@ class CentralizedServer(Thread):
                         message_to_client += '\n Duplicate file name in server directory. \n Name is changed to ' + \
                             file_name_at_server
                         break
-                self.files.insert(0, dict(zip(self.fileMetaData, [str(
-                    self.host), request[2], file_name_at_server, str(datetime.now())])))
+                self.files.insert(0, dict(zip(self.fileMetaData, [
+                                  host_name, request[2], file_name_at_server, str(datetime.now())])))
                 client.send(pickle.dumps(message_to_client))
+                self.semaphore.release()
+
+            elif message_type == 'search':
+                file_name = request[1]
+                print('Client', request[2], 'search for file', file_name)
+                self.semaphore.acquire()
+                search_result = []
+                for file in self.files:
+                    if file['file_name'] == file_name:
+                        search_result.append(file)
+                client.send(pickle.dumps(search_result))
                 self.semaphore.release()
 
             elif message_type == 'ping':
@@ -128,10 +147,11 @@ class CentralizedServer(Thread):
             if is_client_host_in_server:
                 for file in self.files:
                     if file['host_name'] == host_name:
-                        file_data = [file['host_name'],
-                                     file['file_name'], file['date-added']]
+                        file_data = [file['host_name'], file['host_port'],
+                                     file['file_name'], file['date_added']]
                         file_lists.append(
                             dict(zip(self.fileMetaData, file_data)))
+
                 return file_lists
             raise FileNotFoundError('Hostname is not found')
 
@@ -156,11 +176,10 @@ class CentralizedServer(Thread):
         return ['OK', client_port]
 
     def client_login(self, client_host_name, client_password):
-
         for client_host in self.clientHost:
             if (client_host['host_name'] == client_host_name):
-                return 'OK' if (client_host['host_password'] == client_password) else 'WRONG_PASSWORD'
-        return 'HOST_NAME_NOT_FOUND'
+                return ['OK', client_host['host_port']] if (client_host['host_password'] == client_password) else ['WRONG_PASSWORD', 0]
+        return ['HOST_NAME_NOT_FOUND', 0]
 
 
 print("Welcome. Server is about to go live")

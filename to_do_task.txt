@@ -4,3 +4,4 @@
 - Chinh sua logic login -> vao he thong: x
 - UI : x
 - Bao cao : x
+- adding sha256 encoding password : x

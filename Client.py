@@ -22,9 +22,9 @@ Command line support: \n
 register <hostname> <password>
 login <hostname> <password>
 publish <file_path_at_peer> <file_name_at_server>
+search <file_name>
 fetch <file_name> <peer_port> 
-discover <host_name> 
-ping <host_name> <port>  """
+"""
         )
 
     def P2PServer_start(self):
@@ -37,11 +37,13 @@ ping <host_name> <port>  """
                 self.register(request[1], request[2])
             elif message_type == "login":
                 self.login(request[1], request[2])
+                p2p_fetching_start("localhost", self.peer_port)
             elif message_type == "publish":
                 self.publish(request[1], request[2])
-                p2p_fetching_start("localhost", self.peer_port)
             elif message_type == "fetch":
                 self.fetch(request[1], request[2])
+            elif message_type == 'search':
+                self.search(request[1])
             elif message_type == "discover":
                 self.discover(request[1])
             elif message_type == "ping":
@@ -68,7 +70,8 @@ ping <host_name> <port>  """
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " + str(self.peer_port)
+                "Your registration is success! Your port name is " +
+                str(self.peer_port)
             )
         else:
             print(
@@ -87,8 +90,9 @@ ping <host_name> <port>  """
 
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
-        if client_state == "OK":
+        if client_state[0] == "OK":
             print("Login success!")
+            self.peer_port = client_state[1]
             return True
         elif client_state == "WRONG_PASSWORD":
             print("Login fail because of wrong password!")
@@ -112,12 +116,26 @@ ping <host_name> <port>  """
         print(client_state)
         client_connection.close()
 
+    def search(self, file_name):
+        client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_connection.connect(
+            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
+        )
+        search_stream = ["search", file_name, self.peer_port]
+        data_stream = pickle.dumps(search_stream)
+        client_connection.send(data_stream)
+        client_state = client_connection.recv(Environment.PACKET_SIZE)
+        client_state = pickle.loads(client_state)
+        print(client_state)
+        client_connection.close()
+
     def discover(self, host_name="localhost"):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect((host_name, self.peer_port))
         discover_request = ["discover", host_name]
         client_connection.send(pickle.dumps(discover_request))
-        client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
+        client_state = pickle.loads(
+            client_connection.recv(Environment.PACKET_SIZE))
 
         peer_files = client_state[0]
         peer_file_metadata = client_state[1]
@@ -144,7 +162,8 @@ ping <host_name> <port>  """
         client_connection.connect((host_name, port_name))
         ping_request = ["ping", host_name, port_name]
         client_connection.send(pickle.dumps(ping_request))
-        client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
+        client_state = pickle.loads(
+            client_connection.recv(Environment.PACKET_SIZE))
 
         # if (host_name != 'localhost') and (client_state == 'NOT_FOUND'):
         #     return 'The host name is not found in the server'

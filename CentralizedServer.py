@@ -181,8 +181,8 @@ class CentralizedServer(Thread):
             if (client_host['host_name'] == client_host_name):
                 pass_encode = hashlib.sha256(
                     str(client_password).encode('utf-8')).hexdigest()
-                return ['OK', client_host['host_port']] if (client_host['host_password'] == pass_encode) else 'WRONG_PASSWORD'
-        return 'HOST_NAME_NOT_FOUND'
+                return ['OK', client_host['host_port']] if (client_host['host_password'] == pass_encode) else ['WRONG_PASSWORD', 0]
+        return ['HOST_NAME_NOT_FOUND', 0]
 
 
 print("Welcome. Server is about to go live")

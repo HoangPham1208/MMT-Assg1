@@ -35,13 +35,10 @@ class P2PFetching(threading.Thread):
                 self.semaphore.acquire()
                 with open(file_path, 'rb') as sharing_file:
                     while True:
-                        reader = sharing_file.read(Environment.PACKET_SIZE)
-                        while reader:
-                            client.send(reader)
-                            reader = sharing_file.read(Environment.PACKET_SIZE)
-                        sharing_file.close()
-                        client.close()
-                        break
+                        data = sharing_file.read(Environment.PACKET_SIZE)
+                        if not data:
+                            break
+                        client.send(pickle.dumps(data))
                 self.semaphore.release()
                 print('The file has been sent successfully')
             else:

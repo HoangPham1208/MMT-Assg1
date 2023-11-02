@@ -36,8 +36,8 @@ fetch <file_name> <peer_port>
             if message_type == "register":
                 self.register(request[1], request[2])
             elif message_type == "login":
-                self.login(request[1], request[2])
-                p2p_fetching_start("localhost", self.peer_port)
+                if self.login(request[1], request[2]):
+                    p2p_fetching_start("localhost", self.peer_port)
             elif message_type == "publish":
                 self.publish(request[1], request[2])
             elif message_type == "fetch":
@@ -88,9 +88,11 @@ fetch <file_name> <peer_port>
         client_state = pickle.loads(client_state)
         if client_state[0] == "OK":
             print("Login success!")
+            self.host_name = host_name
+            self.host_password = host_password
             self.peer_port = client_state[1]
             return True
-        elif client_state == "WRONG_PASSWORD":
+        elif client_state[0] == "WRONG_PASSWORD":
             print("Login fail because of wrong password!")
         else:
             print("Host name is not found in the server")

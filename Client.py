@@ -42,7 +42,7 @@ fetch <file_name> <peer_port>
                 self.publish(request[1], request[2])
             elif message_type == "fetch":
                 self.fetch(request[1], request[2])
-            elif message_type == 'search':
+            elif message_type == "search":
                 self.search(request[1])
             else:
                 print("Wrong command line. Exited!")
@@ -66,8 +66,7 @@ fetch <file_name> <peer_port>
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " +
-                str(self.peer_port)
+                "Your registration is success! Your port name is " + str(self.peer_port)
             )
         else:
             print(
@@ -101,7 +100,7 @@ fetch <file_name> <peer_port>
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
-        repo_path = os.path.join(os.getcwd(), "repo_1")
+        repo_path = os.path.join(os.getcwd(), "repo_2")
         repo_path = repo_path.replace(os.path.sep, "/")
         copy_file_to_directory(lname, repo_path, file_name)
         published_stream = ["publish", file_name, self.peer_port]

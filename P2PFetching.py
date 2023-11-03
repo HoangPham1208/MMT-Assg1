@@ -37,6 +37,8 @@ class P2PFetching(threading.Thread):
                     while True:
                         data = sharing_file.read(Environment.PACKET_SIZE)
                         if not data:
+                            sharing_file.close()
+                            client.close()
                             break
                         client.send(pickle.dumps(data))
                 self.semaphore.release()

@@ -5,6 +5,7 @@ import re
 # from CentralizedServer import CentralizedServer
 # import P2PFetching
 from Client import PeerManager
+from P2PFetching import p2p_fetching_start
 from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -184,8 +185,10 @@ class RegistryFrame(Frame):
                     # move to OnlineUserPage
                     if result == True:
                         self.close = True
+                        peer_port = self.peer_port
                         hostn = host.get()
-                        HomePage(hostn)
+                        p2p_fetching_start("localhost", peer_port)
+                        HomePage(hostn, peer_port)
                     else:
                         tkinter.messagebox.showerror(
                             title="Lỗi đăng nhập",
@@ -300,9 +303,9 @@ class RegistryFrame(Frame):
 
 
 class HomePage(Tk):
-    def __init__(self, host):
+    def __init__(self, host, peer_port):
         super().__init__()
-
+        self.peer_port = peer_port
         self.title("P2P FileSharing")
         self.geometry("650x500")
         self.configure(bg="#ffffff")
@@ -324,9 +327,13 @@ class HomePage(Tk):
 
         def fetchFile():
             filename = filenameEntry.get()
-            peer = peerportEntry.get()
-            if filename != "" and peer != "":
-                PeerManager.publish(self, filename, peer)
+            peer_port = int(peerportEntry.get())
+
+            # print(filename + " " + peer_port)
+
+            if filename != "" and peer_port != "":
+                # p2p_fetching_start(host_name, peer_port)
+                PeerManager.fetch(self, filename, peer_port)
                 self.close = True
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
@@ -343,9 +350,9 @@ class HomePage(Tk):
 
         l1 = tkinter.Label(self, text="Host_name:", font=("Helvetica", 11))
         l1.place(x=20, y=60)
-        # host_name = host
-        # l1 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
-        # l1.place(x=120, y=60)
+        host_name = host
+        l1 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
+        l1.place(x=120, y=60)
 
         # Publish
         l3 = tk.Label(self, text="Publish File:", font=("Helvetica", 11))

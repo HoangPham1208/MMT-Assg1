@@ -5,7 +5,10 @@ import re
 # from CentralizedServer import CentralizedServer
 # import P2PFetching
 from Client import PeerManager
+from P2PFetching import p2p_fetching_start
 from PIL import Image, ImageTk
+import tkinter as tk
+import tkinter.ttk as ttk
 
 # from tkinter import Image
 import threading
@@ -182,8 +185,10 @@ class RegistryFrame(Frame):
                     # move to OnlineUserPage
                     if result == True:
                         self.close = True
+                        peer_port = self.peer_port
                         hostn = host.get()
-                        HomePage(hostn)
+                        p2p_fetching_start("localhost", peer_port)
+                        HomePage(hostn, peer_port)
                     else:
                         tkinter.messagebox.showerror(
                             title="Lỗi đăng nhập",
@@ -298,42 +303,100 @@ class RegistryFrame(Frame):
 
 
 class HomePage(Tk):
-    def __init__(self, host):
+    def __init__(self, host, peer_port):
         super().__init__()
-
+        self.peer_port = peer_port
         self.title("P2P FileSharing")
-        self.geometry("450x500")
+        self.geometry("650x500")
         self.configure(bg="#ffffff")
 
+        # img1 = PhotoImage(file="Image/share.png")
+        # self.iconphoto(False, img1)
         # icon
         # icon
         # không hiểu sao đoạn này cái icon nó bị lỗi
-        # img = PhotoImage(file="Image/share.png")
-        # self.tk.call("wm", "iconphoto", self._w, img)
-        Button(
+
+        def publishFile():
+            fname = fnameEntry.get()
+            lname = lnameEntry.get()
+            if lname != "" and fname != "":
+                PeerManager.publish(self, lname, fname)
+                self.close = True
+            else:
+                tkinter.messagebox.showerror("Error", "Missing value")
+
+        def fetchFile():
+            filename = filenameEntry.get()
+            peer_port = int(peerportEntry.get())
+
+            # print(filename + " " + peer_port)
+
+            if filename != "" and peer_port != "":
+                # p2p_fetching_start(host_name, peer_port)
+                PeerManager.fetch(self, filename, peer_port)
+                self.close = True
+            else:
+                tkinter.messagebox.showerror("Error", "Missing value")
+
+        appTitle = tkinter.Label(
             self,
-            text="Publish File",
-            font=("Acumin Variable Concept", 20, "bold"),
-            width=20,
-            bg="#57a1f8",
-            fg="white",
-        ).place(x=50, y=30)
-        Button(
+            text="P2P FILESHARING APP",
+            font=("Helvetica", 25, "bold"),
+            width=33,
+            background="#57a1f8",
+            anchor="center",
+        )
+        appTitle.place(x=0, y=0)
+
+        l1 = tkinter.Label(self, text="Host_name:", font=("Helvetica", 11))
+        l1.place(x=20, y=60)
+        host_name = host
+        l1 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
+        l1.place(x=120, y=60)
+
+        # Publish
+        l3 = tk.Label(self, text="Publish File:", font=("Helvetica", 11))
+        l3.place(x=20, y=110)
+        l4 = tk.Label(self, text="lname:", font=("Helvetica", 11))
+        l5 = tk.Label(self, text="file_name:", font=("Helvetica", 11))
+        l4.place(x=20, y=140)
+        l5.place(x=230 + 50, y=140)
+        lnameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
+        fnameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
+        lnameEntry.place(x=100, y=140)
+        fnameEntry.place(x=370, y=140)
+        publishBtn = ttk.Button(
             self,
-            text="Download File",
-            font=("Acumin Variable Concept", 20, "bold"),
-            width=20,
-            bg="#57a1f8",
-            fg="white",
-        ).place(x=50, y=120)
-        Button(
+            text="Publish",
+            style="my.TButton",
+            width=12,
+            takefocus=0,
+            command=publishFile,
+        )
+        publishBtn.place(x=555, y=140)
+
+        # Fetch
+
+        la = tk.Label(self, text="Fetch File:", font=("Helvetica", 11))
+        la.place(x=20, y=380)
+        lb = tk.Label(self, text="file_name:", font=("Helvetica", 11))
+        lc = tk.Label(self, text="peer_port:", font=("Helvetica", 11))
+        lb.place(x=20, y=410)
+        lc.place(x=230 + 50, y=410)
+        filenameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
+        peerportEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
+        filenameEntry.place(x=100, y=410)
+        peerportEntry.place(x=370, y=410)
+        fetchBtn = ttk.Button(
             self,
-            text="List File",
-            font=("Acumin Variable Concept", 20, "bold"),
-            width=20,
-            bg="#57a1f8",
-            fg="white",
-        ).place(x=50, y=220)
+            text="Fetch",
+            style="my.TButton",
+            width=12,
+            takefocus=0,
+            command=fetchFile,
+        )
+        fetchBtn.place(x=555, y=410)
+        self.mainloop()
 
 
 if __name__ == "__main__":

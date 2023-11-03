@@ -124,6 +124,7 @@ fetch <file_name> <peer_port>
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
         print(client_state)
+        return client_state
         client_connection.close()
 
     def fetch(self, file_name, peer_port):

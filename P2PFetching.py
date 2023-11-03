@@ -17,23 +17,21 @@ class P2PFetching(threading.Thread):
         self.client_socket.listen(maxixum_client_number)
 
     def run(self):
-        print('Ready to share file')
+        print("Ready to share file")
         while True:
             client, client_addr = self.client_socket.accept()
-            print('A new connection from',
-                  client_addr[0], 'port', client_addr[1])
+            print("A new connection from", client_addr[0], "port", client_addr[1])
 
-            request = pickle.loads(client.recv(
-                Environment.PACKET_SIZE))
+            request = pickle.loads(client.recv(Environment.PACKET_SIZE))
             message_type = request[0]
 
-            if message_type == 'fetch':
-                repo_path = os.path.join(os.getcwd(), 'repo_2')
+            if message_type == "fetch":
+                repo_path = os.path.join(os.getcwd(), "repo_2")
                 file_name = request[1]
                 file_path = os.path.join(repo_path, file_name)
 
                 self.semaphore.acquire()
-                with open(file_path, 'rb') as sharing_file:
+                with open(file_path, "rb") as sharing_file:
                     while True:
                         data = sharing_file.read(Environment.PACKET_SIZE)
                         if not data:
@@ -42,7 +40,7 @@ class P2PFetching(threading.Thread):
                             break
                         client.send(pickle.dumps(data))
                 self.semaphore.release()
-                print('The file has been sent successfully')
+                print("The file has been sent successfully")
             else:
                 continue
                 # print("Wrong command line message")

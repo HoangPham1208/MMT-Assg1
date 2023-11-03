@@ -140,9 +140,9 @@ fetch <file_name> <peer_port>
             while True:
                 file_stream = client_connection.recv(Environment.PACKET_SIZE)
                 if not file_stream:
-                    download_file = pickle.loads(download_file)
                     download_file.close()
                     break
+                file_stream = pickle.loads(file_stream)
                 download_file.write(file_stream)
         client_connection.close()
         print("The file is downloaded in your repository")

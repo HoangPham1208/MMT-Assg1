@@ -18,7 +18,7 @@ class PeerManager:
         self.peer_port = ""
         self.host_name = ""
         self.host_password = ""
-        self.host_addr = Environment.PEER_HOST
+        # self.host_addr = Environment.PEER_HOST
         print("Started P2P file sharing system")
         print(
             """
@@ -165,11 +165,11 @@ fetch <file_name> <peer_port>
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
         host_request = ['get_host', host_name]
-        client_connection.send(pickle.dumps[host_request])
+        client_connection.send(pickle.dumps(host_request))
         host_info = pickle.loads(
             client_connection.recv(Environment.PACKET_SIZE))
         client_connection.close()
-        print(host_info)
+        
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (host_info['host_addr'], int(host_info['host_port'])))
@@ -279,4 +279,4 @@ def copy_file_to_directory(source_file, destination_directory, fname):
 
 if __name__ == "__main__":
     peer = PeerManager()
-    peer.P2PServer_start()
+    # peer.P2PServer_start()

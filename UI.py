@@ -3,7 +3,7 @@ from tkinter import font
 import re
 
 # from CentralizedServer import CentralizedServer
-# import P2PFetching
+
 from Client import PeerManager
 from P2PFetching import p2p_fetching_start
 from PIL import Image, ImageTk
@@ -29,6 +29,11 @@ class FirstPage(Tk):
         self.geometry("450x500")
         self.configure(bg="#ffffff")
 
+    def on_closing(self):
+        if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.register.delete()
+            self.login.delete()
+            self.destroy()
         # icon
         img = PhotoImage(file="Image/share.png")
         self.tk.call("wm", "iconphoto", self._w, img)
@@ -74,7 +79,7 @@ class FirstPage(Tk):
             comman=lambda: self.change_frame("register"),
         )
         button2.grid(row=0, column=1, padx=5, pady=5)
-
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.mainloop()
 
     def change_frame(self, frame_name):
@@ -86,20 +91,6 @@ class FirstPage(Tk):
             self.login.pack_forget()
         else:
             print("Ahuhu :((")
-
-    # def auto_close(self):
-    #     if self.login.close:
-    #         self.login.close = -1  # stop sign
-    #         self.destroy()
-
-    #     elif self.login.close != -1:
-    #         self.after(1000, self.auto_close)
-
-    def on_closing(self):
-        if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.register.delete()
-            self.login.delete()
-            self.destroy()
 
 
 #  Subframe for First Page - Toggle between Login and Register Service
@@ -332,7 +323,7 @@ class HomePage(Tk):
             # print(filename + " " + peer_port)
 
             if filename != "" and peer_port != "":
-                # p2p_fetching_start(host_name, peer_port)
+                # p2p_fetching_start(, peer_port)
                 PeerManager.fetch(self, filename, peer_port)
                 self.close = True
             else:
@@ -347,20 +338,25 @@ class HomePage(Tk):
             anchor="center",
         )
         appTitle.place(x=0, y=0)
-
+        # host name
         l1 = tkinter.Label(self, text="Host_name:", font=("Helvetica", 11))
         l1.place(x=20, y=60)
         host_name = host
-        l1 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
-        l1.place(x=120, y=60)
+        l2 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
+        l2.place(x=120, y=60)
 
+        # Port:
+        lp = tk.Label(self, text="Port:", font=("Helvetica", 11))
+        lp.place(x=280, y=60)
+        lp1 = tkinter.Label(self, text=self.peer_port, font=("Helvetica", 11))
+        lp1.place(x=370, y=60)
         # Publish
         l3 = tk.Label(self, text="Publish File:", font=("Helvetica", 11))
         l3.place(x=20, y=110)
         l4 = tk.Label(self, text="lname:", font=("Helvetica", 11))
         l5 = tk.Label(self, text="file_name:", font=("Helvetica", 11))
         l4.place(x=20, y=140)
-        l5.place(x=230 + 50, y=140)
+        l5.place(x=280, y=140)
         lnameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
         fnameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
         lnameEntry.place(x=100, y=140)

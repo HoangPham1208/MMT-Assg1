@@ -40,16 +40,19 @@ fetch <file_name> <peer_port>
                 if self.login(request[1], request[2]):
                     p2p_fetching_start("localhost", self.peer_port)
             elif message_type == "publish":
-                new_request = [request[0], ' '.join(
-                    request[1:len(request)-1]), request[-1]]
+                new_request = [
+                    request[0],
+                    " ".join(request[1 : len(request) - 1]),
+                    request[-1],
+                ]
                 print(new_request)
                 self.publish(new_request[1], new_request[2])
             elif message_type == "fetch":
                 self.fetch(request[1], request[2])
             elif message_type == "search":
                 self.search(request[1])
-            elif message_type == 'refresh':
-                self.refresh(self.host_name)        
+            elif message_type == "refresh":
+                self.refresh(self.host_name)
             else:
                 print("Wrong command line. Exited!")
                 break
@@ -67,9 +70,9 @@ fetch <file_name> <peer_port>
 
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
-        
         print(client_state)
-    
+        return client_state
+
     def register(self, host_name, host_password):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -88,8 +91,7 @@ fetch <file_name> <peer_port>
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " +
-                str(self.peer_port)
+                "Your registration is success! Your port name is " + str(self.peer_port)
             )
         else:
             print(
@@ -125,7 +127,7 @@ fetch <file_name> <peer_port>
         repo_path = repo_path.replace(os.path.sep, "/")
         copy_data = copy_file_to_directory(lname, repo_path, file_name)
         if not copy_data[0]:
-            print('Your file path or file name is wrong! Please try again!')
+            print("Your file path or file name is wrong! Please try again!")
             return
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(

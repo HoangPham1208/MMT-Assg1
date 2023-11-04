@@ -18,6 +18,7 @@ class PeerManager:
         self.peer_port = ""
         self.host_name = ""
         self.host_password = ""
+        self.host_addr = Environment.PEER_HOST
         print("Started P2P file sharing system")
         print(
             """
@@ -40,14 +41,13 @@ fetch <file_name> <peer_port>
                 self.register(request[1], request[2])
             elif message_type == "login":
                 if self.login(request[1], request[2]):
-                    p2p_fetching_start("localhost", self.peer_port)
+                    p2p_fetching_start(self.host_addr, self.peer_port)
             elif message_type == "publish":
                 new_request = [
                     request[0],
-                    " ".join(request[1 : len(request) - 1]),
+                    " ".join(request[1: len(request) - 1]),
                     request[-1],
                 ]
-                print(new_request)
                 self.publish(new_request[1], new_request[2])
             elif message_type == "fetch":
                 self.fetch(request[1], request[2])
@@ -82,7 +82,8 @@ fetch <file_name> <peer_port>
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
 
-        registered_stream = ["register", host_name, host_password]
+        registered_stream = ["register", host_name,
+                             host_password, self.host_addr]
         data_stream = pickle.dumps(registered_stream)
         client_connection.send(data_stream)
 
@@ -93,7 +94,8 @@ fetch <file_name> <peer_port>
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " + str(self.peer_port)
+                "Your registration is success! Your port name is " +
+                str(self.peer_port)
             )
         else:
             print(
@@ -125,7 +127,7 @@ fetch <file_name> <peer_port>
         return False
 
     def publish(self, lname, file_name):
-        repo_path = os.path.join(os.getcwd(), "repo_2")
+        repo_path = os.path.join(os.getcwd(), "repo")
         repo_path = repo_path.replace(os.path.sep, "/")
         copy_data = copy_file_to_directory(lname, repo_path, file_name)
         if not copy_data[0]:
@@ -135,7 +137,8 @@ fetch <file_name> <peer_port>
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
-        published_stream = ["publish", copy_data[1], self.peer_port, copy_data[2]]
+        published_stream = ["publish", copy_data[1],
+                            self.peer_port, copy_data[2]]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
         client_state = client_connection.recv(Environment.PACKET_SIZE)
@@ -154,17 +157,27 @@ fetch <file_name> <peer_port>
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
         print(client_state)
+        client_connection.close()
         return client_state
+
+    def fetch(self, file_name, host_name):
+        client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_connection.connect(
+            Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
+        host_request = ['get_host', host_name]
+        client_connection.send(host_request)
+        host_info = pickle.loads(
+            client_connection.recv(Environment.PACKET_SIZE))
         client_connection.close()
 
-    def fetch(self, file_name, peer_port):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect(("localhost", int(peer_port)))
+        client_connection.connect(
+            (host_info['host_addr'], int(host_info['host_port'])))
         fetched_stream = ["fetch", file_name]
         data_stream = pickle.dumps(fetched_stream)
         client_connection.send(data_stream)
 
-        repo_path = os.path.join(os.getcwd(), "repo_1")
+        repo_path = os.path.join(os.getcwd(), "repo")
 
         with open(os.path.join(repo_path, file_name), "wb") as download_file:
             while True:
@@ -172,7 +185,6 @@ fetch <file_name> <peer_port>
                 if not file_stream:
                     download_file.close()
                     break
-                file_stream = pickle.loads(file_stream)
                 download_file.write(file_stream)
         client_connection.close()
         print("The file is downloaded in your repository")
@@ -247,7 +259,8 @@ def copy_file_to_directory(source_file, destination_directory, fname):
                     if match:
                         idx = int(match.group(1))
                         fname = (
-                            re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
+                            re.sub(r"\_\((\d+)\)$",
+                                   f"_({idx+1}).", split_name[0])
                             + split_name[1]
                         )
                     else:

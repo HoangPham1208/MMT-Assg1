@@ -7,6 +7,7 @@ import platform
 import subprocess
 import Environment
 from P2PFetching import *
+import re  # regular expression
 
 
 class PeerManager:
@@ -104,14 +105,15 @@ fetch <file_name> <peer_port>
     def publish(self, lname, file_name):
         repo_path = os.path.join(os.getcwd(), "repo_2")
         repo_path = repo_path.replace(os.path.sep, "/")
-        if not copy_file_to_directory(lname, repo_path, file_name):
+        copy_data = copy_file_to_directory(lname, repo_path, file_name)
+        if not copy_data[0]:
             print('Your file path or file name is wrong! Please try again!')
             return
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
-        published_stream = ["publish", file_name, self.peer_port]
+        published_stream = ["publish", copy_data[1], self.peer_port, copy_data[2]]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
         client_state = client_connection.recv(Environment.PACKET_SIZE)
@@ -130,6 +132,7 @@ fetch <file_name> <peer_port>
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
         print(client_state)
+        return client_state
         client_connection.close()
 
     def fetch(self, file_name, peer_port):
@@ -154,15 +157,53 @@ fetch <file_name> <peer_port>
 
 
 def copy_file_to_directory(source_file, destination_directory, fname):
+    choice = "0"
     if not os.path.exists(destination_directory):
         # Create the directory if it doesn't exist
         os.makedirs(destination_directory)
     if os.path.isfile(source_file) and os.path.isdir(destination_directory):
+        # HANDLING DUPLICATES FILE NAMES
+        # format: filename.extension
+        # duplicate files will be named as filename_(i).extension, where i is an integer
+        # ------------------------------
+        if fname in os.listdir(destination_directory):
+            print(
+                "File name already exists. Do you want to overwrite it or auto rename the file?"
+            )
+            print("1. Overwrite")
+            print("2. Rename")
+            choice = input("Enter your choice: ")
+            if choice == "1":
+                print("Overwriting file...")
+            elif choice == "2":
+                idx = 1
+                while fname in os.listdir(destination_directory):
+                    split_name = fname.rsplit(
+                        ".", 1
+                    )  # split the file name and extension
+                    match = re.search(
+                        r"\_\((\d+)\)$", split_name[0]
+                    )  # check if the file name already has a number
+                    if match:
+                        # get the index of the file
+                        idx = int(match.group(1))
+                        fname = (
+                            re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
+                            + split_name[1]
+                        )  # increment the index
+                    else:
+                        fname = (
+                            split_name[0] + f"_(1)." + split_name[1]
+                        )  # add the index
+                    idx += 1
+            else:
+                print("Invalid choice. Please try again.")
+        # ------------------------------
         destination_path = os.path.join(destination_directory, fname)
         shutil.copy(source_file, destination_path)
-        return True
+        return [True, fname, choice]
     else:
-        return False
+        return [False, fname, choice]
 
 
 if __name__ == "__main__":

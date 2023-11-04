@@ -1,16 +1,11 @@
 import time
 from tkinter import font
 import re
-
-# from CentralizedServer import CentralizedServer
-# import P2PFetching
 from Client import PeerManager
 from P2PFetching import p2p_fetching_start
 from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.ttk as ttk
-
-# from tkinter import Image
 import threading
 import sys
 import collections
@@ -32,19 +27,15 @@ class FirstPage(Tk):
         # icon
         img = PhotoImage(file="Image/share.png")
         self.tk.call("wm", "iconphoto", self._w, img)
-
         # logo
         logo = PhotoImage(file="Image/logo.png")
         self.background = Label(self, width=400, height=188, image=logo).place(
             x=25, y=100
         )
         # self.background.pack()
+        self.after(1000, lambda: self.auto_close())
 
-        self.login = RegistryFrame(
-            self,
-            fname="login",
-            bground="white",
-        )
+        self.login = RegistryFrame(self, fname="login", bground="white")
         self.register = RegistryFrame(self, fname="register", bground="white")
 
         # buttons
@@ -87,19 +78,12 @@ class FirstPage(Tk):
         else:
             print("Ahuhu :((")
 
-    # def auto_close(self):
-    #     if self.login.close:
-    #         self.login.close = -1  # stop sign
-    #         self.destroy()
-
-    #     elif self.login.close != -1:
-    #         self.after(1000, self.auto_close)
-
-    def on_closing(self):
-        if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.register.delete()
-            self.login.delete()
+    def auto_close(self):
+        if self.login.close:
+            self.login.close = -1  # stop sign
             self.destroy()
+        elif self.login.close != -1:
+            self.after(1000, self.auto_close)
 
 
 #  Subframe for First Page - Toggle between Login and Register Service
@@ -310,14 +294,9 @@ class HomePage(Tk):
         super().__init__()
         self.peer_port = peer_port
         self.title("P2P FileSharing")
-        self.geometry("650x500")
-        self.configure(bg="#ffffff")
-
-        # img1 = PhotoImage(file="Image/share.png")
-        # self.iconphoto(False, img1)
-        # icon
-        # icon
-        # không hiểu sao đoạn này cái icon nó bị lỗi
+        self.geometry("660x500")
+        # self.configure(bg="#ffffff")
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         def publishFile():
             fname = fnameEntry.get()
@@ -325,22 +304,44 @@ class HomePage(Tk):
             if lname != "" and fname != "":
                 PeerManager.publish(self, lname, fname)
                 self.close = True
+                tkinter.messagebox.showinfo(
+                    "Successfully published", "Successfully published"
+                )
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
+
+        def sreachFile():
+            fname1 = file_nameEntry.get()
+            if fname1 != "":
+                result = []
+                result = PeerManager.search(self, fname1)
+                showListPeer(result)
+                self.close = True
+
+        # def updateListFile():
+
+        def showListPeer(data):
+            listbox.delete(0, tk.END)
+            str = "Host_name       Port       File_name"
+            listbox.insert(tk.END, str)
+            for item in data:
+                text = f"   {item['host_name']}           {item['host_port']}        {item['file_name']}"
+                listbox.insert(tk.END, text)
 
         def fetchFile():
             filename = filenameEntry.get()
             peer_port = int(peerportEntry.get())
-
-            # print(filename + " " + peer_port)
-
             if filename != "" and peer_port != "":
-                # p2p_fetching_start(host_name, peer_port)
                 PeerManager.fetch(self, filename, peer_port)
                 self.close = True
+                tkinter.messagebox.showinfo(
+                    "Successfully fetched", "Successfully fetched"
+                )
+
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
 
+        #
         appTitle = tkinter.Label(
             self,
             text="P2P FILESHARING APP",
@@ -351,36 +352,116 @@ class HomePage(Tk):
         )
         appTitle.place(x=0, y=0)
 
-        l1 = tkinter.Label(self, text="Host_name:", font=("Helvetica", 11))
+        l1 = tkinter.Label(
+            self,
+            text="Host_name:",
+            font=("Helvetica", 11, "bold"),
+        )
         l1.place(x=20, y=60)
         host_name = host
-        l1 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
-        l1.place(x=120, y=60)
+        l2 = tkinter.Label(self, text=host_name, font=("Helvetica", 11))
+        l2.place(x=120, y=60)
 
+        # port
+        lp = tk.Label(self, text="Port:", font=("Helvetica", 11, "bold"))
+        lp.place(x=200, y=60)
+        lp1 = tk.Label(self, text=self.peer_port, font=("Helvetica", 11))
+        lp1.place(x=250, y=60)
         # Publish
-        l3 = tk.Label(self, text="Publish File:", font=("Helvetica", 11))
+        l3 = tk.Label(self, text="Publish File:", font=("Helvetica", 11, "bold"))
         l3.place(x=20, y=110)
         l4 = tk.Label(self, text="lname:", font=("Helvetica", 11))
         l5 = tk.Label(self, text="file_name:", font=("Helvetica", 11))
         l4.place(x=20, y=140)
-        l5.place(x=230 + 50, y=140)
+        l5.place(x=280, y=140)
         lnameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
         fnameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
         lnameEntry.place(x=100, y=140)
         fnameEntry.place(x=370, y=140)
-        publishBtn = ttk.Button(
+
+        publishBtn = Button(
             self,
             text="Publish",
-            style="my.TButton",
+            border=1,
             width=12,
-            takefocus=0,
+            bg="#57a1f8",
+            fg="black",
             command=publishFile,
         )
         publishBtn.place(x=555, y=140)
 
-        # Fetch
+        # Sreach
+        la = tk.Label(self, text="Sreach File:", font=("Helvetica", 11, "bold"))
+        la.place(x=20, y=180)
+        lb = tk.Label(self, text="file_name:", font=("Helvetica", 11))
+        lb.place(x=20, y=210)
+        file_nameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
+        file_nameEntry.place(x=100, y=210)
 
-        la = tk.Label(self, text="Fetch File:", font=("Helvetica", 11))
+        sreachFileBtn = Button(
+            self,
+            text="Sreach",
+            border=1,
+            width=12,
+            bg="#57a1f8",
+            fg="black",
+            command=sreachFile,
+        )
+        sreachFileBtn.place(x=240, y=210)
+        # Sreach -> list
+        fileArea = tk.Frame(self, background="white")
+        fileArea.place(x=20, y=240)
+        scroll = ttk.Scrollbar(fileArea)
+        listbox = tk.Listbox(
+            fileArea,
+            yscrollcommand=scroll.set,
+            font=("Helvetica", 14),
+            width=28,
+            height=5,
+            selectbackground="#b8f89e",
+            selectforeground="black",
+            activestyle="none",
+            highlightthickness=0,
+            borderwidth=0,
+            selectmode="single",
+        )
+        scroll.pack(side="right", fill="y")
+        listbox.pack(side="left", padx=5, pady=5)
+
+        # List File
+        lf = tk.Label(self, text="List File:", font=("Helvetica", 11))
+        lf.place(x=400, y=180)
+        showListFile = Button(
+            self,
+            text="Refresh",
+            border=1,
+            width=12,
+            bg="#57a1f8",
+            fg="black",
+            # command=sreachFile,
+        )
+        showListFile.place(x=555, y=180)
+        listfile = tk.Frame(self, background="white")
+        listfile.place(x=400, y=240)
+        scroll = ttk.Scrollbar(listfile)
+        listbox1 = tk.Listbox(
+            listfile,
+            yscrollcommand=scroll.set,
+            font=("Helvetica", 14),
+            width=20,
+            height=5,
+            selectbackground="#b8f89e",
+            selectforeground="black",
+            activestyle="none",
+            highlightthickness=0,
+            borderwidth=0,
+            selectmode="single",
+        )
+        scroll.pack(side="right", fill="y")
+        listbox1.pack(side="left", padx=5, pady=5)
+
+        # Fetch
+        la = tk.Label(self, text="Fetch File:", font=("Helvetica", 11, "bold"))
         la.place(x=20, y=380)
         lb = tk.Label(self, text="file_name:", font=("Helvetica", 11))
         lc = tk.Label(self, text="peer_port:", font=("Helvetica", 11))
@@ -390,16 +471,23 @@ class HomePage(Tk):
         peerportEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
         filenameEntry.place(x=100, y=410)
         peerportEntry.place(x=370, y=410)
-        fetchBtn = ttk.Button(
+        fetchBtn = Button(
             self,
-            text="Fetch",
-            style="my.TButton",
+            text="Sreach",
+            border=1,
             width=12,
-            takefocus=0,
+            bg="#57a1f8",
+            fg="black",
             command=fetchFile,
         )
         fetchBtn.place(x=555, y=410)
+
         self.mainloop()
+
+    def on_closing(self):
+        if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.destroy()
+            os._exit(0)
 
 
 if __name__ == "__main__":

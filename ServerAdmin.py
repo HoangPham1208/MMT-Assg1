@@ -64,11 +64,10 @@ ping <hostname>
 
     def discover(self, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect(('localhost', Environment.SERVER_PORT))
+        client_connection.connect(("localhost", Environment.SERVER_PORT))
         discover_request = ["discover", host_name]
         client_connection.send(pickle.dumps(discover_request))
-        client_state = pickle.loads(
-            client_connection.recv(Environment.PACKET_SIZE))
+        client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
 
         if client_state is not list:
             print(client_state)
@@ -88,19 +87,19 @@ ping <hostname>
                         " ",
                         file[peer_file_metadata[2]],
                         " ",
-                        file[peer_file_metadata[3]]
+                        file[peer_file_metadata[3]],
                     )
                     for file in peer_files
                 ]
         client_connection.close()
+        return client_state
 
     def ping(self, host_name, port_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect((host_name, port_name))
         ping_request = ["ping", host_name, port_name]
         client_connection.send(pickle.dumps(ping_request))
-        client_state = pickle.loads(
-            client_connection.recv(Environment.PACKET_SIZE))
+        client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
 
         # if (host_name != 'localhost') and (client_state == 'NOT_FOUND'):
         #     return 'The host name is not found in the server'

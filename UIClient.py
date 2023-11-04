@@ -1,5 +1,3 @@
-import time
-from tkinter import font
 import re
 from Client import PeerManager
 from P2PFetching import p2p_fetching_start
@@ -7,8 +5,6 @@ from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.ttk as ttk
 import threading
-import sys
-import collections
 from tkinter import *
 from tkinter import Tk
 import tkinter.messagebox

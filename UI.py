@@ -24,11 +24,6 @@ class FirstPage(Tk):
         self.geometry("450x500")
         self.configure(bg="#ffffff")
 
-    def on_closing(self):
-        if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.register.delete()
-            self.login.delete()
-            self.destroy()
         # icon
         img = PhotoImage(file="Image/share.png")
         self.tk.call("wm", "iconphoto", self._w, img)
@@ -70,7 +65,7 @@ class FirstPage(Tk):
             comman=lambda: self.change_frame("register"),
         )
         button2.grid(row=0, column=1, padx=5, pady=5)
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
         self.mainloop()
 
     def change_frame(self, frame_name):

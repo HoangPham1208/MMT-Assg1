@@ -295,7 +295,14 @@ class HomePage(Tk):
             fname = fnameEntry.get()
             lname = lnameEntry.get()
             if lname != "" and fname != "":
+                # # check
+                # repo_path = os.path.join(os.getcwd(), "repo_2")
+                # repo_path = repo_path.replace(os.path.sep, "/")
+                # # if not os.path.exists(repo_path):
+
+                # # false
                 PeerManager.publish(self, lname, fname)
+                # true -> popup -> ???
                 self.close = True
                 tkinter.messagebox.showinfo(
                     "Successfully published", "Successfully published"
@@ -494,3 +501,11 @@ class HomePage(Tk):
 
 if __name__ == "__main__":
     root = FirstPage()
+
+
+# def show_popup():
+#     response = messagebox.askquestion("Question", "Do you want to Rename?")
+#     if response == "yes":
+#         print("User chose 'Yes'")
+#     else:
+#         print("User chose 'No'")

@@ -8,6 +8,8 @@ import subprocess
 import Environment
 from P2PFetching import *
 import re  # regular expression
+import tkinter as tk
+from tkinter import messagebox, simpledialog
 
 
 class PeerManager:
@@ -176,49 +178,85 @@ fetch <file_name> <peer_port>
         print("The file is downloaded in your repository")
 
 
+# def copy_file_to_directory(source_file, destination_directory, fname):
+#     choice = "0"
+#     if not os.path.exists(destination_directory):
+#         # Create the directory if it doesn't exist
+#         os.makedirs(destination_directory)
+#     if os.path.isfile(source_file) and os.path.isdir(destination_directory):
+#         # HANDLING DUPLICATES FILE NAMES
+#         # format: filename.extension
+#         # duplicate files will be named as filename_(i).extension, where i is an integer
+#         # ------------------------------
+#         if fname in os.listdir(destination_directory):
+#             print(
+#                 "File name already exists. Do you want to overwrite it or auto rename the file?"
+#             )
+#             print("1. Overwrite")
+#             print("2. Rename")
+#             choice = input("Enter your choice: ")
+#             if choice == "1":
+#                 print("Overwriting file...")
+#             elif choice == "2":
+#                 idx = 1
+#                 while fname in os.listdir(destination_directory):
+#                     split_name = fname.rsplit(
+#                         ".", 1
+#                     )  # split the file name and extension
+#                     match = re.search(
+#                         r"\_\((\d+)\)$", split_name[0]
+#                     )  # check if the file name already has a number
+#                     if match:
+#                         # get the index of the file
+#                         idx = int(match.group(1))
+#                         fname = (
+#                             re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
+#                             + split_name[1]
+#                         )  # increment the index
+#                     else:
+#                         fname = (
+#                             split_name[0] + f"_(1)." + split_name[1]
+#                         )  # add the index
+#                     idx += 1
+#             else:
+#                 print("Invalid choice. Please try again.")
+#         # ------------------------------
+#         destination_path = os.path.join(destination_directory, fname)
+#         shutil.copy(source_file, destination_path)
+#         return [True, fname, choice]
+#     else:
+#         return [False, fname, choice]
 def copy_file_to_directory(source_file, destination_directory, fname):
     choice = "0"
     if not os.path.exists(destination_directory):
-        # Create the directory if it doesn't exist
         os.makedirs(destination_directory)
+
     if os.path.isfile(source_file) and os.path.isdir(destination_directory):
-        # HANDLING DUPLICATES FILE NAMES
-        # format: filename.extension
-        # duplicate files will be named as filename_(i).extension, where i is an integer
-        # ------------------------------
         if fname in os.listdir(destination_directory):
-            print(
-                "File name already exists. Do you want to overwrite it or auto rename the file?"
+            choice = tk.messagebox.askquestion(
+                "File Name Conflict",
+                "File name already exists. Do you want to overwrite it?",
             )
-            print("1. Overwrite")
-            print("2. Rename")
-            choice = input("Enter your choice: ")
-            if choice == "1":
+            if choice == "yes":
                 print("Overwriting file...")
-            elif choice == "2":
+            elif choice == "no":
                 idx = 1
                 while fname in os.listdir(destination_directory):
-                    split_name = fname.rsplit(
-                        ".", 1
-                    )  # split the file name and extension
-                    match = re.search(
-                        r"\_\((\d+)\)$", split_name[0]
-                    )  # check if the file name already has a number
+                    split_name = fname.rsplit(".", 1)
+                    match = re.search(r"\_\((\d+)\)$", split_name[0])
                     if match:
-                        # get the index of the file
                         idx = int(match.group(1))
                         fname = (
                             re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
                             + split_name[1]
-                        )  # increment the index
+                        )
                     else:
-                        fname = (
-                            split_name[0] + f"_(1)." + split_name[1]
-                        )  # add the index
+                        fname = split_name[0] + f"_(1)." + split_name[1]
                     idx += 1
             else:
                 print("Invalid choice. Please try again.")
-        # ------------------------------
+                # return [False, fname]
+
         destination_path = os.path.join(destination_directory, fname)
         shutil.copy(source_file, destination_path)
         return [True, fname, choice]

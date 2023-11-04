@@ -30,8 +30,7 @@ class CentralizedServer(Thread):
             "host_port",
             "host_live",
         ]
-        self.fileMetaData = ["host_name",
-                             "host_port", "file_name", "date_added"]
+        self.fileMetaData = ["host_name", "host_port", "file_name", "date_added"]
         admin_data = [
             "admin",
             "1",
@@ -60,8 +59,7 @@ class CentralizedServer(Thread):
             message_type = request[0]
 
             if message_type == "register":
-                print("Client", client_addr[0],
-                      "want to register to use the server")
+                print("Client", client_addr[0], "want to register to use the server")
                 self.semaphore.acquire()
                 clientPort = 15000
                 if len(self.clientHost) != 1:
@@ -85,13 +83,11 @@ class CentralizedServer(Thread):
             elif message_type == "discover":
                 self.semaphore.acquire()
                 try:
-                    list_of_files = pickle.dumps(
-                        self.list_of_files(request[1]))
+                    list_of_files = pickle.dumps(self.list_of_files(request[1]))
                     client.send(list_of_files)
                 except FileNotFoundError:
                     client.send(
-                        pickle.dumps(
-                            "The server is not found your requested hostname")
+                        pickle.dumps("The server is not found your requested hostname")
                     )
                 self.semaphore.release()
 
@@ -102,9 +98,13 @@ class CentralizedServer(Thread):
                 file_name_at_server = request[1]
                 # choice for rename or overwrite: '1' for overwrting , '2' for auto rename
                 choice = request[3]
-                if choice != "0" and choice != "1" and choice != "2":
-                    print("The source file or destination directory of client is not valid!")
-                    message_to_client = "Please provide a valid source file or destination directory."
+                if choice != "0" and choice != "yes" and choice != "no":
+                    print(
+                        "The source file or destination directory of client is not valid!"
+                    )
+                    message_to_client = (
+                        "Please provide a valid source file or destination directory. "
+                    )
                 else:
                     message_to_client = "File Registered Successfully."
                     host_name = "localhost"
@@ -124,11 +124,16 @@ class CentralizedServer(Thread):
                     #             + file_name_at_server
                     #         )
                     #         break
-                    if choice == "1": # overwriting, so we need to find file and change the datetime
+                    if (
+                        choice == "yes"
+                    ):  # overwriting, so we need to find file and change the datetime
                         for element in self.files:
-                            if element['host_name'] == host_name and element['file_name'] == file_name_at_server:
-                                element['date_added'] = str(datetime.now())
-                    if choice == "2" or choice == "0":
+                            if (
+                                element["host_name"] == host_name
+                                and element["file_name"] == file_name_at_server
+                            ):
+                                element["date_added"] = str(datetime.now())
+                    if choice == "no" or choice == "0":
                         self.files.insert(
                             0,
                             dict(
@@ -165,12 +170,12 @@ class CentralizedServer(Thread):
                 client.send(pickle.dumps(host_addr))
                 self.semaphore.release()
 
-            elif message_type == 'refresh':
+            elif message_type == "refresh":
                 self.semaphore.acquire()
                 list_files = self.list_of_files(request[1])
                 client.send(pickle.dumps(list_files))
                 self.semaphore.release()
-            
+
             else:
                 break
                 # print('Wrong command line')
@@ -200,8 +205,7 @@ class CentralizedServer(Thread):
                             file["file_name"],
                             file["date_added"],
                         ]
-                        file_lists.append(
-                            dict(zip(self.fileMetaData, file_data)))
+                        file_lists.append(dict(zip(self.fileMetaData, file_data)))
 
                 return file_lists
             raise FileNotFoundError("Hostname is not found")

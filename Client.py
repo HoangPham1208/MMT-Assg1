@@ -39,7 +39,10 @@ fetch <file_name> <peer_port>
                 if self.login(request[1], request[2]):
                     p2p_fetching_start("localhost", self.peer_port)
             elif message_type == "publish":
-                self.publish(request[1], request[2])
+                new_request = [request[0], ' '.join(
+                    request[1:len(request)-1]), request[-1]]
+                print(new_request)
+                self.publish(new_request[1], new_request[2])
             elif message_type == "fetch":
                 self.fetch(request[1], request[2])
             elif message_type == "search":
@@ -66,7 +69,8 @@ fetch <file_name> <peer_port>
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " + str(self.peer_port)
+                "Your registration is success! Your port name is " +
+                str(self.peer_port)
             )
         else:
             print(
@@ -98,13 +102,15 @@ fetch <file_name> <peer_port>
         return False
 
     def publish(self, lname, file_name):
+        repo_path = os.path.join(os.getcwd(), "repo_2")
+        repo_path = repo_path.replace(os.path.sep, "/")
+        if not copy_file_to_directory(lname, repo_path, file_name):
+            print('Your file path or file name is wrong! Please try again!')
+            return
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
-        repo_path = os.path.join(os.getcwd(), "repo_2")
-        repo_path = repo_path.replace(os.path.sep, "/")
-        copy_file_to_directory(lname, repo_path, file_name)
         published_stream = ["publish", file_name, self.peer_port]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
@@ -154,9 +160,9 @@ def copy_file_to_directory(source_file, destination_directory, fname):
     if os.path.isfile(source_file) and os.path.isdir(destination_directory):
         destination_path = os.path.join(destination_directory, fname)
         shutil.copy(source_file, destination_path)
-        print(f"File '{source_file}' copied to '{destination_directory}'")
+        return True
     else:
-        print("Please provide a valid source file and destination directory.")
+        return False
 
 
 if __name__ == "__main__":

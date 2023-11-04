@@ -208,8 +208,10 @@ class RegistryFrame(Frame):
             host_name = Entry(self, width=30, border=0)
             host_name.place(x=80, y=100)
             host_name.insert(0, "Host name")
-            host_name.bind("<FocusIn>", lambda event: on_enter(event, "host_name"))
-            host_name.bind("<FocusOut>", lambda event: on_leave(event, "host_name"))
+            host_name.bind(
+                "<FocusIn>", lambda event: on_enter(event, "host_name"))
+            host_name.bind(
+                "<FocusOut>", lambda event: on_leave(event, "host_name"))
             Frame(self, width=295, height=2, bg="black").place(x=75, y=120)
 
             host_password = Entry(self, width=30, border=0)
@@ -293,7 +295,8 @@ class RegistryFrame(Frame):
                     )
                 else:
                     # CentralizedServer.sign_up(host_name.get(), host_password.get())
-                    tkinter.messagebox.showinfo("Đăng kí", "Đăng kí thành công")
+                    tkinter.messagebox.showinfo(
+                        "Đăng kí", "Đăng kí thành công")
                     threading.Thread(
                         target=PeerManager.register(
                             self, host_name.get(), host_password.get()

@@ -30,7 +30,8 @@ class CentralizedServer(Thread):
             "host_port",
             "host_live",
         ]
-        self.fileMetaData = ["host_name", "host_port", "file_name", "date_added"]
+        self.fileMetaData = ["host_name",
+                             "host_port", "file_name", "date_added"]
         admin_data = [
             "admin",
             "1",
@@ -59,7 +60,8 @@ class CentralizedServer(Thread):
             message_type = request[0]
 
             if message_type == "register":
-                print("Client", client_addr[0], "want to register to use the server")
+                print("Client", client_addr[0],
+                      "want to register to use the server")
                 self.semaphore.acquire()
                 clientPort = 15000
                 if len(self.clientHost) != 1:
@@ -83,11 +85,13 @@ class CentralizedServer(Thread):
             elif message_type == "discover":
                 self.semaphore.acquire()
                 try:
-                    list_of_files = pickle.dumps(self.list_of_files(request[1]))
+                    list_of_files = pickle.dumps(
+                        self.list_of_files(request[1]))
                     client.send(list_of_files)
                 except FileNotFoundError:
                     client.send(
-                        pickle.dumps("The server is not found your requested hostname")
+                        pickle.dumps(
+                            "The server is not found your requested hostname")
                     )
                 self.semaphore.release()
 
@@ -95,7 +99,6 @@ class CentralizedServer(Thread):
                 print("Client with port", str(request[2]), "want to share file")
                 self.semaphore.acquire()
                 # Check duplicate file name in server
-                print(request)
                 file_name_at_server = request[1]
                 # choice for rename or overwrite: '1' for overwrting , '2' for auto rename
                 choice = request[3]
@@ -191,7 +194,8 @@ class CentralizedServer(Thread):
                             file["file_name"],
                             file["date_added"],
                         ]
-                        file_lists.append(dict(zip(self.fileMetaData, file_data)))
+                        file_lists.append(
+                            dict(zip(self.fileMetaData, file_data)))
 
                 return file_lists
             raise FileNotFoundError("Hostname is not found")

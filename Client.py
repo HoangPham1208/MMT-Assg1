@@ -48,10 +48,28 @@ fetch <file_name> <peer_port>
                 self.fetch(request[1], request[2])
             elif message_type == "search":
                 self.search(request[1])
+            elif message_type == 'refresh':
+                self.refresh(self.host_name)        
             else:
                 print("Wrong command line. Exited!")
                 break
 
+    def refresh(self, host_name):
+        client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        client_connection.connect(
+            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
+        )
+
+        refreshed_stream = ["refresh", host_name]
+        data_stream = pickle.dumps(refreshed_stream)
+        client_connection.send(data_stream)
+
+        client_state = client_connection.recv(Environment.PACKET_SIZE)
+        client_state = pickle.loads(client_state)
+        
+        print(client_state)
+    
     def register(self, host_name, host_password):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

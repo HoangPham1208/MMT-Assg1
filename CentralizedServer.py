@@ -165,6 +165,12 @@ class CentralizedServer(Thread):
                 client.send(pickle.dumps(host_addr))
                 self.semaphore.release()
 
+            elif message_type == 'refresh':
+                self.semaphore.acquire()
+                list_files = self.list_of_files(request[1])
+                client.send(pickle.dumps(list_files))
+                self.semaphore.release()
+            
             else:
                 break
                 # print('Wrong command line')

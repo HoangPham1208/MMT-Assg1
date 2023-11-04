@@ -92,45 +92,57 @@ class CentralizedServer(Thread):
                 self.semaphore.release()
 
             elif message_type == "publish":
-                print("Client with", str(request[2]), "want to share file")
+                print("Client with port", str(request[2]), "want to share file")
                 self.semaphore.acquire()
                 # Check duplicate file name in server
                 print(request)
                 file_name_at_server = request[1]
-                message_to_client = "File Registered Successfully."
-                host_name = "localhost"
+                # choice for rename or overwrite: '1' for overwrting , '2' for auto rename
+                choice = request[3]
+                if choice != "0" and choice != "1" and choice != "2":
+                    print("The source file or destination directory of client is not valid!")
+                    message_to_client = "Please provide a valid source file or destination directory."
+                else:
+                    message_to_client = "File Registered Successfully."
+                    host_name = "localhost"
+                    for client_host in self.clientHost:
+                        if client_host["host_port"] == request[2]:
+                            host_name = client_host["host_name"]
+                            break
+                    # for index_file in self.files:
+                    #     if index_file["file_name"] == file_name_at_server:
+                    #         file_name_at_server = file_name_at_server.split(".")
+                    #         print(file_name_at_server)
+                    #         file_name_at_server = (
+                    #             file_name_at_server[0] + " (1)." + file_name_at_server[1]
+                    #         )
+                    #         message_to_client += (
+                    #             "\n Duplicate file name in server directory. \n Name is changed to "
+                    #             + file_name_at_server
+                    #         )
+                    #         break
+                    if choice == "1": # overwriting, so we need to find file and change the datetime
+                        for element in self.files:
+                            if element['host_name'] == host_name and element['file_name'] == file_name_at_server:
+                                element['date_added'] = str(datetime.now())
+                    if choice == "2" or choice == "0":
+                        self.files.insert(
+                            0,
+                            dict(
+                                zip(
+                                    self.fileMetaData,
+                                    [
+                                        host_name,
+                                        request[2],
+                                        file_name_at_server,
+                                        str(datetime.now()),
+                                    ],
+                                )
+                            ),
+                        )
 
-                for client_host in self.clientHost:
-                    if client_host["host_port"] == request[2]:
-                        host_name = client_host["host_name"]
-                        break
-                for index_file in self.files:
-                    if index_file["file_name"] == file_name_at_server:
-                        file_name_at_server = file_name_at_server.split(".")
-                        print(file_name_at_server)
-                        file_name_at_server = (
-                            file_name_at_server[0] + " (1)." + file_name_at_server[1]
-                        )
-                        message_to_client += (
-                            "\n Duplicate file name in server directory. \n Name is changed to "
-                            + file_name_at_server
-                        )
-                        break
-                self.files.insert(
-                    0,
-                    dict(
-                        zip(
-                            self.fileMetaData,
-                            [
-                                host_name,
-                                request[2],
-                                file_name_at_server,
-                                str(datetime.now()),
-                            ],
-                        )
-                    ),
-                )
                 client.send(pickle.dumps(message_to_client))
+                print(self.files)
                 self.semaphore.release()
 
             elif message_type == "search":

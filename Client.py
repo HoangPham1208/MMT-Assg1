@@ -105,8 +105,8 @@ fetch <file_name> <peer_port>
         )
         repo_path = os.path.join(os.getcwd(), "repo_2")
         repo_path = repo_path.replace(os.path.sep, "/")
-        copy_file_to_directory(lname, repo_path, file_name)
-        published_stream = ["publish", file_name, self.peer_port]
+        fname, client_choice = copy_file_to_directory(lname, repo_path, file_name)
+        published_stream = ["publish", fname, self.peer_port, client_choice]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
         client_state = client_connection.recv(Environment.PACKET_SIZE)
@@ -150,6 +150,7 @@ fetch <file_name> <peer_port>
 
 
 def copy_file_to_directory(source_file, destination_directory, fname):
+    choice = "0"
     if not os.path.exists(destination_directory):
         # Create the directory if it doesn't exist
         os.makedirs(destination_directory)
@@ -194,9 +195,8 @@ def copy_file_to_directory(source_file, destination_directory, fname):
         destination_path = os.path.join(destination_directory, fname)
         shutil.copy(source_file, destination_path)
         print(f"File '{source_file}' copied to '{destination_directory}'")
-    else:
-        print("Please provide a valid source file and destination directory.")
-
+        
+    return fname,choice
 
 if __name__ == "__main__":
     peer = PeerManager()

@@ -96,6 +96,12 @@ class RegistryFrame(Frame):
 
     def render(self):
         if self.fname == "login":
+            def show():
+                passwd.configure(show='')
+                check.configure(command=hide, text='hide password')
+            def hide():
+                passwd.configure(show='*')
+                check.configure(command=show, text='show password')
             label_0 = Label(
                 self,
                 fg="#57a1f8",
@@ -104,19 +110,26 @@ class RegistryFrame(Frame):
                 font=("Microsoft YaHei UI Light", 25, "bold"),
             )
             label_0.place(x=140, y=20)
-
+            
+            label_host = Label(self, text="Host name", bg="#fff", fg="#57a1f8")
             host = Entry(self, width=30, border=0)
             host.place(x=90, y=100)
             host.insert(0, "Hostname")
             host.bind("<FocusIn>", lambda event: on_enter(event, "host"))
             host.bind("<FocusOut>", lambda event: on_leave(event, "host"))
             Frame(self, width=295, height=2, bg="black").place(x=85, y=120)
+            label_host.place(x=80, y=80)
 
-            passwd = Entry(self, width=30, border=0)
+            label_passwd = Label(self, text="Password", bg="#fff", fg="#57a1f8")
+            passwd = Entry(self, width=30, border=0, show="*")
             passwd.place(x=90, y=150)
             passwd.insert(0, "HostPassword")
             passwd.bind("<FocusIn>", lambda event: on_enter(event, "passwd"))
             passwd.bind("<FocusOut>", lambda event: on_leave(event, "passwd"))
+            label_passwd.place(x=80, y=130)
+            
+            check = Checkbutton(self, text="Show my password", bg="#fff", fg="#57a1f8",command=show)
+            check.pack(side="top", pady=180)
             Frame(self, width=295, height=2, bg="black").place(x=85, y=170)
 
             submit = Button(
@@ -185,14 +198,17 @@ class RegistryFrame(Frame):
             )
             label_0.place(x=80, y=20)
 
+            label_host_name = Label(self, text="Host name", bg="#fff", fg="#57a1f8")
             host_name = Entry(self, width=30, border=0)
             host_name.place(x=80, y=100)
             host_name.insert(0, "Host name")
             host_name.bind("<FocusIn>", lambda event: on_enter(event, "host_name"))
             host_name.bind("<FocusOut>", lambda event: on_leave(event, "host_name"))
             Frame(self, width=295, height=2, bg="black").place(x=75, y=120)
-
-            host_password = Entry(self, width=30, border=0)
+            label_host_name.place(x=80, y=80)
+                        
+            label_password = Label(self, text="Password", bg="#fff", fg="#57a1f8")
+            host_password = Entry(self, width=30, border=0, show = "*")
             host_password.place(x=80, y=150)
             host_password.insert(0, "Host password")
             host_password.bind(
@@ -201,11 +217,14 @@ class RegistryFrame(Frame):
             host_password.bind(
                 "<FocusOut>", lambda event: on_leave(event, "host_password")
             )
-            Frame(self, width=295, height=2, bg="black").place(x=75, y=170)
 
-            re_host_password = Entry(self, width=30, border=0)
+            Frame(self, width=295, height=2, bg="black").place(x=75, y=170)
+            label_password.place(x=80, y=130)
+
+            label_re_password = Label(self, text="Retype Password", bg="#fff", fg="#57a1f8")
+            re_host_password = Entry(self, width=30, border=0, show = "*")
             re_host_password.place(x=80, y=200)
-            re_host_password.insert(0, "Retype Host Password")
+            re_host_password.insert(0, "Host password")
             re_host_password.bind(
                 "<FocusIn>", lambda event: on_enter(event, "re_host_password")
             )
@@ -213,7 +232,8 @@ class RegistryFrame(Frame):
                 "<FocusOut>", lambda event: on_leave(event, "re_host_password")
             )
             Frame(self, width=295, height=2, bg="black").place(x=75, y=220)
-
+            label_re_password.place(x=80, y=180)
+            
             submit = Button(
                 self,
                 text="Register",
@@ -442,7 +462,7 @@ class HomePage(Tk):
         lf.place(x=400, y=180)
         showListFile = Button(
             self,
-            text="Refresh",
+            text="List my files",
             border=1,
             width=12,
             bg="#57a1f8",

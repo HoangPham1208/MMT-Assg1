@@ -164,7 +164,7 @@ class CentralizedServer(Thread):
                 self.semaphore.acquire()
                 search_result = []
                 for file in self.files:
-                    if file["file_name"] == file_name:
+                    if file["file_name"].find(file_name) != -1:
                         search_result.append(file)
                 client.send(pickle.dumps(search_result))
                 self.semaphore.release()

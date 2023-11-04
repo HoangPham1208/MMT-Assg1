@@ -192,10 +192,8 @@ class RegistryFrame(Frame):
             host_name = Entry(self, width=30, border=0)
             host_name.place(x=80, y=100)
             host_name.insert(0, "Host name")
-            host_name.bind(
-                "<FocusIn>", lambda event: on_enter(event, "host_name"))
-            host_name.bind(
-                "<FocusOut>", lambda event: on_leave(event, "host_name"))
+            host_name.bind("<FocusIn>", lambda event: on_enter(event, "host_name"))
+            host_name.bind("<FocusOut>", lambda event: on_leave(event, "host_name"))
             Frame(self, width=295, height=2, bg="black").place(x=75, y=120)
 
             host_password = Entry(self, width=30, border=0)
@@ -279,8 +277,7 @@ class RegistryFrame(Frame):
                     )
                 else:
                     # CentralizedServer.sign_up(host_name.get(), host_password.get())
-                    tkinter.messagebox.showinfo(
-                        "Đăng kí", "Đăng kí thành công")
+                    tkinter.messagebox.showinfo("Đăng kí", "Đăng kí thành công")
                     threading.Thread(
                         target=PeerManager.register(
                             self, host_name.get(), host_password.get()
@@ -318,7 +315,16 @@ class HomePage(Tk):
                 showListPeer(result)
                 self.close = True
 
-        # def updateListFile():
+        def updateListFile():
+            result = []
+            result = PeerManager.refresh(self, host_name)
+            listbox1.delete(0, tk.END)
+            str = "            File_name"
+            listbox1.insert(tk.END, str)
+            for item in result:
+                if item["host_name"] == host_name:
+                    text = f"              {item['file_name']} "
+                    listbox1.insert(tk.END, text)
 
         def showListPeer(data):
             listbox.delete(0, tk.END)
@@ -438,7 +444,7 @@ class HomePage(Tk):
             width=12,
             bg="#57a1f8",
             fg="black",
-            # command=sreachFile,
+            command=updateListFile,
         )
         showListFile.place(x=555, y=180)
         listfile = tk.Frame(self, background="white")

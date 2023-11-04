@@ -307,7 +307,7 @@ class HomePage(Tk):
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
 
-        def sreachFile():
+        def searchFile():
             fname1 = file_nameEntry.get()
             if fname1 != "":
                 result = []
@@ -396,25 +396,25 @@ class HomePage(Tk):
         )
         publishBtn.place(x=555, y=140)
 
-        # Sreach
-        la = tk.Label(self, text="Sreach File:", font=("Helvetica", 11, "bold"))
+        # search
+        la = tk.Label(self, text="Search File:", font=("Helvetica", 11, "bold"))
         la.place(x=20, y=180)
         lb = tk.Label(self, text="file_name:", font=("Helvetica", 11))
         lb.place(x=20, y=210)
         file_nameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
         file_nameEntry.place(x=100, y=210)
 
-        sreachFileBtn = Button(
+        searchFileBtn = Button(
             self,
-            text="Sreach",
+            text="Search",
             border=1,
             width=12,
             bg="#57a1f8",
             fg="black",
-            command=sreachFile,
+            command=searchFile,
         )
-        sreachFileBtn.place(x=240, y=210)
-        # Sreach -> list
+        searchFileBtn.place(x=240, y=210)
+        # search -> list
         fileArea = tk.Frame(self, background="white")
         fileArea.place(x=20, y=240)
         scroll = ttk.Scrollbar(fileArea)
@@ -479,7 +479,7 @@ class HomePage(Tk):
         peerportEntry.place(x=370, y=410)
         fetchBtn = Button(
             self,
-            text="Sreach",
+            text="Search",
             border=1,
             width=12,
             bg="#57a1f8",

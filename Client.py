@@ -176,9 +176,28 @@ fetch <file_name> <peer_port>
         fetched_stream = ["fetch", file_name]
         data_stream = pickle.dumps(fetched_stream)
         client_connection.send(data_stream)
-
-        repo_path = os.path.join(os.getcwd(), "repo")
-
+        
+        # load to Download_Files folder
+        repo_path = os.path.join(os.getcwd(), "Download_Files")
+        repo_path = repo_path.replace(os.path.sep, "/")
+        # Handle for first time
+        if not os.path.exists(repo_path):
+            os.makedirs(repo_path)
+        # Handle for duplicate file name
+        if file_name in os.listdir(repo_path):
+            idx = 1
+            while file_name in os.listdir(repo_path):
+                split_name = file_name.rsplit(".", 1)
+                match = re.search(r"\_\((\d+)\)$", split_name[0])
+                if match:
+                    idx = int(match.group(1))
+                    file_name = (
+                        re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
+                        + split_name[1]
+                    )
+                else:
+                    file_name = split_name[0] + f"_(1)." + split_name[1]
+                idx += 1    
         with open(os.path.join(repo_path, file_name), "wb") as download_file:
             while True:
                 file_stream = client_connection.recv(Environment.PACKET_SIZE)

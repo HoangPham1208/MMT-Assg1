@@ -41,7 +41,7 @@ fetch <file_name> <peer_port>
                 self.register(request[1], request[2])
             elif message_type == "login":
                 if self.login(request[1], request[2]):
-                    p2p_fetching_start(self.host_addr, self.peer_port)
+                    p2p_fetching_start(Environment.PEER_HOST, self.peer_port)
             elif message_type == "publish":
                 new_request = [
                     request[0],
@@ -83,7 +83,7 @@ fetch <file_name> <peer_port>
         )
 
         registered_stream = ["register", host_name,
-                             host_password, self.host_addr]
+                             host_password, Environment.PEER_HOST]
         data_stream = pickle.dumps(registered_stream)
         client_connection.send(data_stream)
 
@@ -163,13 +163,13 @@ fetch <file_name> <peer_port>
     def fetch(self, file_name, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
-            Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
+            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
         host_request = ['get_host', host_name]
-        client_connection.send(host_request)
+        client_connection.send(pickle.dumps[host_request])
         host_info = pickle.loads(
             client_connection.recv(Environment.PACKET_SIZE))
         client_connection.close()
-
+        print(host_info)
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (host_info['host_addr'], int(host_info['host_port'])))

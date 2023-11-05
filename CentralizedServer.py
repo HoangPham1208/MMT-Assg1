@@ -183,10 +183,15 @@ class CentralizedServer(Thread):
 
             elif message_type == "get_host":
                 self.semaphore.acquire()
+                check = False
                 for client_host in self.clientHost:
-                    if client_host["host_name"] == host_name:
+                    if client_host["host_name"] == request[1]:
                         client.send(pickle.dumps(client_host))
+                        check = True
                         break
+                # if out of loop, client_host is not found
+                if not check:
+                    client.send(pickle.dumps("HOST_NOT_FOUND"))
                 self.semaphore.release()
 
             else:

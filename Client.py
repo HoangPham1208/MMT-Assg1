@@ -131,8 +131,8 @@ fetch <file_name> <peer_port>
         repo_path = repo_path.replace(os.path.sep, "/")
         copy_data = copy_file_to_directory(lname, repo_path, file_name)
         if not copy_data[0]:
-            print("Your file path or file name is wrong! Please try again!")
-            return
+            # print("Your file path or file name is wrong! Please try again!")
+            return False
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
@@ -145,6 +145,7 @@ fetch <file_name> <peer_port>
         client_state = pickle.loads(client_state)
         print(client_state)
         client_connection.close()
+        return True
 
     def search(self, file_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -170,17 +171,25 @@ fetch <file_name> <peer_port>
             client_connection.recv(Environment.PACKET_SIZE))
         client_connection.close()
         
+        # Handle if not get anything
+        if host_info == "HOST_NOT_FOUND":
+            return "HOST_NOT_FOUND"
+                
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (host_info['host_addr'], int(host_info['host_port'])))
         fetched_stream = ["fetch", file_name]
         data_stream = pickle.dumps(fetched_stream)
         client_connection.send(data_stream)
-        
         # load to Download_Files folder
         repo_path = os.path.join(os.getcwd(), "Download_Files")
         repo_path = repo_path.replace(os.path.sep, "/")
         # Handle for first time
+        file_stream = client_connection.recv(Environment.PACKET_SIZE)
+        
+        if file_stream == "FILE_NOT_FOUND".encode(): # handle if file not found
+            return "FILE_NOT_FOUND"
+        
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
         # Handle for duplicate file name
@@ -207,6 +216,7 @@ fetch <file_name> <peer_port>
                 download_file.write(file_stream)
         client_connection.close()
         print("The file is downloaded in your repository")
+        return True
 
 
 # def copy_file_to_directory(source_file, destination_directory, fname):

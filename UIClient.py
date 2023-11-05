@@ -321,12 +321,17 @@ class HomePage(Tk):
                 # # if not os.path.exists(repo_path):
 
                 # # false
-                PeerManager.publish(self, lname, fname)
+                check = PeerManager.publish(self, lname, fname)
                 # true -> popup -> ???
                 self.close = True
-                tkinter.messagebox.showinfo(
-                    "Successfully published", "Successfully published"
-                )
+                if check == True:
+                    tkinter.messagebox.showinfo(
+                        "Successfully published", "Successfully published"
+                    )
+                else:
+                    tkinter.messagebox.showerror(
+                        "Error", "Your file path or file name is wrong! Please try again!"
+                    )
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
 
@@ -361,11 +366,20 @@ class HomePage(Tk):
             filename = filenameEntry.get()
             host_name = peerportEntry.get()
             if filename != "" and host_name != "":
-                PeerManager.fetch(self, filename, host_name)
+                check = PeerManager.fetch(self, filename, host_name)
                 self.close = True
-                tkinter.messagebox.showinfo(
-                    "Successfully fetched", "Successfully fetched"
-                )
+                if check == True:
+                    tkinter.messagebox.showinfo(
+                        "Successfully fetched", "Successfully fetched"
+                    )
+                elif check == "HOST_NOT_FOUND":
+                    tkinter.messagebox.showerror(
+                        "Error", "Host not found! Please try again!"
+                    )
+                elif check == "FILE_NOT_FOUND":
+                    tkinter.messagebox.showerror(
+                        "Error", "File not found! Please try again!"
+                    )
 
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
@@ -502,7 +516,7 @@ class HomePage(Tk):
         peerportEntry.place(x=370, y=410)
         fetchBtn = Button(
             self,
-            text="Search",
+            text="Download",
             border=1,
             width=12,
             bg="#57a1f8",

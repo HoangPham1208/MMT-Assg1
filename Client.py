@@ -18,6 +18,7 @@ class PeerManager:
         self.peer_port = ""
         self.host_name = ""
         self.host_password = ""
+        # self.host_addr = Environment.PEER_HOST
         print("Started P2P file sharing system")
         print(
             """
@@ -40,14 +41,13 @@ fetch <file_name> <peer_port>
                 self.register(request[1], request[2])
             elif message_type == "login":
                 if self.login(request[1], request[2]):
-                    p2p_fetching_start("localhost", self.peer_port)
+                    p2p_fetching_start(Environment.PEER_HOST, self.peer_port)
             elif message_type == "publish":
                 new_request = [
                     request[0],
-                    " ".join(request[1 : len(request) - 1]),
+                    " ".join(request[1: len(request) - 1]),
                     request[-1],
                 ]
-                print(new_request)
                 self.publish(new_request[1], new_request[2])
             elif message_type == "fetch":
                 self.fetch(request[1], request[2])
@@ -82,7 +82,8 @@ fetch <file_name> <peer_port>
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
 
-        registered_stream = ["register", host_name, host_password]
+        registered_stream = ["register", host_name,
+                             host_password, Environment.PEER_HOST]
         data_stream = pickle.dumps(registered_stream)
         client_connection.send(data_stream)
 
@@ -93,7 +94,8 @@ fetch <file_name> <peer_port>
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " + str(self.peer_port)
+                "Your registration is success! Your port name is " +
+                str(self.peer_port)
             )
         else:
             print(
@@ -125,23 +127,25 @@ fetch <file_name> <peer_port>
         return False
 
     def publish(self, lname, file_name):
-        repo_path = os.path.join(os.getcwd(), "repo_2")
+        repo_path = os.path.join(os.getcwd(), "repo")
         repo_path = repo_path.replace(os.path.sep, "/")
         copy_data = copy_file_to_directory(lname, repo_path, file_name)
         if not copy_data[0]:
-            print("Your file path or file name is wrong! Please try again!")
-            return
+            # print("Your file path or file name is wrong! Please try again!")
+            return False
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
-        published_stream = ["publish", copy_data[1], self.peer_port, copy_data[2]]
+        published_stream = ["publish", copy_data[1],
+                            self.peer_port, copy_data[2]]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
         print(client_state)
         client_connection.close()
+        return True
 
     def search(self, file_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -154,28 +158,67 @@ fetch <file_name> <peer_port>
         client_state = client_connection.recv(Environment.PACKET_SIZE)
         client_state = pickle.loads(client_state)
         print(client_state)
-        return client_state
         client_connection.close()
+        return client_state
 
-    def fetch(self, file_name, peer_port):
+    def fetch(self, file_name, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect(("localhost", int(peer_port)))
+        client_connection.connect(
+            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
+        host_request = ['get_host', host_name]
+        client_connection.send(pickle.dumps(host_request))
+        host_info = pickle.loads(
+            client_connection.recv(Environment.PACKET_SIZE))
+        client_connection.close()
+        
+        # Handle if not get anything
+        if host_info == "HOST_NOT_FOUND":
+            return "HOST_NOT_FOUND"
+        try:                
+            client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_connection.connect(
+                (host_info['host_addr'], int(host_info['host_port'])))
+        except:
+            return "NOT_ONLINE"
         fetched_stream = ["fetch", file_name]
         data_stream = pickle.dumps(fetched_stream)
         client_connection.send(data_stream)
-
-        repo_path = os.path.join(os.getcwd(), "repo_1")
-
+        # load to Download_Files folder
+        repo_path = os.path.join(os.getcwd(), "Download_Files")
+        repo_path = repo_path.replace(os.path.sep, "/")
+        # Handle for first time
+        file_stream = client_connection.recv(Environment.PACKET_SIZE)
+        
+        if file_stream == "FILE_NOT_FOUND".encode(): # handle if file not found
+            return "FILE_NOT_FOUND"
+        
+        if not os.path.exists(repo_path):
+            os.makedirs(repo_path)
+        # Handle for duplicate file name
+        if file_name in os.listdir(repo_path):
+            idx = 1
+            while file_name in os.listdir(repo_path):
+                split_name = file_name.rsplit(".", 1)
+                match = re.search(r"\_\((\d+)\)$", split_name[0])
+                if match:
+                    idx = int(match.group(1))
+                    file_name = (
+                        re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
+                        + split_name[1]
+                    )
+                else:
+                    file_name = split_name[0] + f"_(1)." + split_name[1]
+                idx += 1    
         with open(os.path.join(repo_path, file_name), "wb") as download_file:
             while True:
                 file_stream = client_connection.recv(Environment.PACKET_SIZE)
                 if not file_stream:
                     download_file.close()
                     break
-                file_stream = pickle.loads(file_stream)
                 download_file.write(file_stream)
         client_connection.close()
         print("The file is downloaded in your repository")
+        return True
 
 
 # def copy_file_to_directory(source_file, destination_directory, fname):
@@ -247,7 +290,8 @@ def copy_file_to_directory(source_file, destination_directory, fname):
                     if match:
                         idx = int(match.group(1))
                         fname = (
-                            re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
+                            re.sub(r"\_\((\d+)\)$",
+                                   f"_({idx+1}).", split_name[0])
                             + split_name[1]
                         )
                     else:
@@ -266,4 +310,4 @@ def copy_file_to_directory(source_file, destination_directory, fname):
 
 if __name__ == "__main__":
     peer = PeerManager()
-    peer.P2PServer_start()
+    # peer.P2PServer_start()

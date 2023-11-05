@@ -20,27 +20,32 @@ class P2PFetching(threading.Thread):
         print("Ready to share file")
         while True:
             client, client_addr = self.client_socket.accept()
-            print("A new connection from", client_addr[0], "port", client_addr[1])
+            print("A new connection from",
+                  client_addr[0], "port", client_addr[1])
 
             request = pickle.loads(client.recv(Environment.PACKET_SIZE))
             message_type = request[0]
 
             if message_type == "fetch":
-                repo_path = os.path.join(os.getcwd(), "repo_2")
+                repo_path = os.path.join(os.getcwd(), "repo")
                 file_name = request[1]
                 file_path = os.path.join(repo_path, file_name)
-
-                self.semaphore.acquire()
-                with open(file_path, "rb") as sharing_file:
-                    while True:
-                        data = sharing_file.read(Environment.PACKET_SIZE)
-                        if not data:
-                            sharing_file.close()
-                            client.close()
-                            break
-                        client.send(pickle.dumps(data))
-                self.semaphore.release()
-                print("The file has been sent successfully")
+                
+                if not os.path.exists(file_path): # CHECK IF FILE EXISTS
+                    client.send("FILE_NOT_FOUND".encode())
+                else:
+                    self.semaphore.acquire()
+                    client.send("OK".encode()) # Handle the request
+                    with open(file_path, "rb") as sharing_file:
+                        while True:
+                            data = sharing_file.read(Environment.PACKET_SIZE)
+                            if not data:
+                                sharing_file.close()
+                                client.close()
+                                break
+                            client.send(data)
+                    self.semaphore.release()
+                    print("The file has been sent successfully")
             else:
                 continue
                 # print("Wrong command line message")

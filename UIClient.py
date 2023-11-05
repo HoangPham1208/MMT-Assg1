@@ -10,8 +10,9 @@ from tkinter import Tk
 import tkinter.messagebox
 import tkinter.filedialog
 import os
-
-
+import Environment
+import sys
+import time
 # First Page
 class FirstPage(Tk):
     def __init__(self):
@@ -180,7 +181,7 @@ class RegistryFrame(Frame):
                         self.close = True
                         peer_port = self.peer_port
                         hostn = host.get()
-                        p2p_fetching_start("localhost", peer_port)
+                        p2p_fetching_start(Environment.PEER_HOST, peer_port)
                         HomePage(hostn, peer_port)
                     else:
                         tkinter.messagebox.showerror(
@@ -321,12 +322,17 @@ class HomePage(Tk):
                 # # if not os.path.exists(repo_path):
 
                 # # false
-                PeerManager.publish(self, lname, fname)
+                check = PeerManager.publish(self, lname, fname)
                 # true -> popup -> ???
                 self.close = True
-                tkinter.messagebox.showinfo(
-                    "Successfully published", "Successfully published"
-                )
+                if check == True:
+                    tkinter.messagebox.showinfo(
+                        "Successfully published", "Successfully published"
+                    )
+                else:
+                    tkinter.messagebox.showerror(
+                        "Error", "Your file path or file name is wrong! Please try again!"
+                    )
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
 
@@ -359,13 +365,26 @@ class HomePage(Tk):
 
         def fetchFile():
             filename = filenameEntry.get()
-            peer_port = int(peerportEntry.get())
-            if filename != "" and peer_port != "":
-                PeerManager.fetch(self, filename, peer_port)
+            host_name = peerportEntry.get()
+            if filename != "" and host_name != "":
+                check = PeerManager.fetch(self, filename, host_name)
                 self.close = True
-                tkinter.messagebox.showinfo(
-                    "Successfully fetched", "Successfully fetched"
-                )
+                if check == True:
+                    tkinter.messagebox.showinfo(
+                        "Successfully fetched", "Successfully fetched"
+                    )
+                elif check == "HOST_NOT_FOUND":
+                    tkinter.messagebox.showerror(
+                        "Error", "Host not found! Please try again!"
+                    )
+                elif check == "FILE_NOT_FOUND":
+                    tkinter.messagebox.showerror(
+                        "Error", "File not found! Please try again!"
+                    )
+                elif check == "NOT_ONLINE":
+                    tkinter.messagebox.showerror(
+                        "Error", f"Host: {host_name} is not online! Please try again!"
+                    )
 
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
@@ -493,7 +512,7 @@ class HomePage(Tk):
         la = tk.Label(self, text="Fetch File:", font=("Helvetica", 11, "bold"))
         la.place(x=20, y=380)
         lb = tk.Label(self, text="file_name:", font=("Helvetica", 11))
-        lc = tk.Label(self, text="peer_port:", font=("Helvetica", 11))
+        lc = tk.Label(self, text="host_name:", font=("Helvetica", 11))
         lb.place(x=20, y=410)
         lc.place(x=230 + 50, y=410)
         filenameEntry = ttk.Entry(self, font=("Helvetica", 11), width=15)
@@ -502,7 +521,7 @@ class HomePage(Tk):
         peerportEntry.place(x=370, y=410)
         fetchBtn = Button(
             self,
-            text="Search",
+            text="Download",
             border=1,
             width=12,
             bg="#57a1f8",
@@ -521,6 +540,7 @@ class HomePage(Tk):
 
 if __name__ == "__main__":
     root = FirstPage()
+    
 
 
 # def show_popup():

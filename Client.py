@@ -174,10 +174,12 @@ fetch <file_name> <peer_port>
         # Handle if not get anything
         if host_info == "HOST_NOT_FOUND":
             return "HOST_NOT_FOUND"
-                
-        client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect(
-            (host_info['host_addr'], int(host_info['host_port'])))
+        try:                
+            client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_connection.connect(
+                (host_info['host_addr'], int(host_info['host_port'])))
+        except:
+            return "NOT_ONLINE"
         fetched_stream = ["fetch", file_name]
         data_stream = pickle.dumps(fetched_stream)
         client_connection.send(data_stream)

@@ -11,7 +11,8 @@ import tkinter.messagebox
 import tkinter.filedialog
 import os
 import Environment
-
+import sys
+import time
 # First Page
 class FirstPage(Tk):
     def __init__(self):
@@ -379,6 +380,10 @@ class HomePage(Tk):
                 elif check == "FILE_NOT_FOUND":
                     tkinter.messagebox.showerror(
                         "Error", "File not found! Please try again!"
+                    )
+                elif check == "NOT_ONLINE":
+                    tkinter.messagebox.showerror(
+                        "Error", f"Host: {host_name} is not online! Please try again!"
                     )
 
             else:

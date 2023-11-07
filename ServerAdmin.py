@@ -72,7 +72,7 @@ ping <host_name>
 
     def showListHostname(self):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect(("localhost", Environment.SERVER_PORT))
+        client_connection.connect((Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
         discover_request = ["list_host_name"]
         client_connection.send(pickle.dumps(discover_request))
         client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))

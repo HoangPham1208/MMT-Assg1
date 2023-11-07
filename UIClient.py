@@ -195,7 +195,7 @@ class RegistryFrame(Frame):
                             title="Lỗi đăng nhập",
                             message="Tài khoản hoặc mật khẩu không đúng!",
                         )
-
+                        
         elif self.fname == "register":
             label_0 = Label(
                 self,
@@ -310,7 +310,6 @@ class RegistryFrame(Frame):
                         ),
                         args=(host_name.get(), host_password.get()),
                     ).start()
-
 
 class HomePage(Tk):
     def __init__(self, host, peer_port):

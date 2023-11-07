@@ -139,9 +139,12 @@ class HomePage(Tk):
             if pname != "":
                 result = []
                 result = AdminManager.ping(self, pname)
-                print(result)
+                result = result.decode().split("\n")  # print result, meet \n -> split
+                # print result, meet \n -> split
                 listbox2.delete(0, tk.END)
-                listbox2.insert(tk.END, result)
+                
+                for res in result:
+                    listbox2.insert(tk.END, res)
                 self.close = True
 
         def updateListHostName():

@@ -2,8 +2,6 @@ import time
 from tkinter import font
 import re
 from ServerAdmin import AdminManager
-from P2PFetching import p2p_fetching_start
-from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.ttk as ttk
 import threading
@@ -16,15 +14,114 @@ import tkinter.filedialog
 import os
 
 
-class FirstPage(Tk):
+class Login(Tk):
     def __init__(self):
         super().__init__()
         self.title("P2P FileSharing")
-        self.geometry("800x500")
+        self.geometry("450x500")
+        self.configure(bg="#ffffff")
 
-        # icon
-        img = PhotoImage(file="Image/share.png")
-        self.tk.call("wm", "iconphoto", self._w, img)
+        def show():
+            passwd.configure(show="")
+            check.configure(command=hide, text="hide password")
+
+        def hide():
+            passwd.configure(show="*")
+            check.configure(command=show, text="show password")
+
+        label_0 = Label(
+            self,
+            fg="#57a1f8",
+            bg="#fff",
+            text="Login form",
+            font=("Microsoft YaHei UI Light", 25, "bold"),
+        )
+        label_0.place(x=140, y=20)
+
+        label_host = Label(self, text="Host name", bg="#fff", fg="#57a1f8")
+        host = Entry(self, width=30, border=0)
+        host.place(x=90, y=100)
+        host.insert(0, "Hostname")
+        host.bind("<FocusIn>", lambda event: on_enter(event, "host"))
+        host.bind("<FocusOut>", lambda event: on_leave(event, "host"))
+        Frame(self, width=295, height=2, bg="black").place(x=85, y=120)
+        label_host.place(x=80, y=80)
+
+        label_passwd = Label(self, text="Password", bg="#fff", fg="#57a1f8")
+        passwd = Entry(self, width=30, border=0, show="*")
+        passwd.place(x=90, y=150)
+        passwd.insert(0, "HostPassword")
+        passwd.bind("<FocusIn>", lambda event: on_enter(event, "passwd"))
+        passwd.bind("<FocusOut>", lambda event: on_leave(event, "passwd"))
+        label_passwd.place(x=80, y=130)
+
+        check = Checkbutton(
+            self, text="Show my password", bg="#fff", fg="#57a1f8", command=show
+        )
+        check.pack(side="top", pady=180)
+        Frame(self, width=295, height=2, bg="black").place(x=85, y=170)
+
+        submit = Button(
+            self,
+            text="Login",
+            border=0,
+            width=40,
+            pady=5,
+            bg="#57a1f8",
+            fg="white",
+            command=lambda: login_redirect(),
+        )
+        submit.place(x=90, y=220)
+
+        def on_enter(_, name):
+            if name == "host":
+                host.delete(0, END)
+            elif name == "passwd":
+                passwd.delete(0, END)
+            else:
+                pass
+
+        def on_leave(_, name):
+            if name == "host":
+                if host.get() == "":
+                    host.insert(0, "Hostname")
+            elif name == "passwd":
+                if passwd.get() == "":
+                    passwd.insert(0, "HostPassword")
+            else:
+                pass
+
+        def login_redirect():
+            # Validate results
+            if host.get() == "" or host.get() == "Hostname":
+                tkinter.messagebox.showerror(
+                    title="Lỗi đăng nhập", message="Nhập host name !!"
+                )
+            elif passwd.get() == "" or passwd.get() == "HostPassword":
+                tkinter.messagebox.showerror(
+                    title="Lỗi đăng nhập", message="Nhập mật khẩu !!"
+                )
+            else:
+                result = []
+                result = AdminManager.login(self, host.get(), passwd.get())
+                # move to OnlineUserPage
+                if result == True:
+                    self.close = True
+                    HomePage()
+                else:
+                    tkinter.messagebox.showerror(
+                        title="Lỗi đăng nhập",
+                        message="Tài khoản hoặc mật khẩu không đúng!",
+                    )
+
+        self.mainloop()
+
+
+class HomePage(Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("P2P FileSharing")
+        self.geometry("1000x500")
 
         # discover
         def discover():
@@ -34,6 +131,17 @@ class FirstPage(Tk):
                 result = AdminManager.discover(self, hname)
                 showList(result)
                 self.close = True
+
+        def updateListHostName():
+            result = []
+            result = AdminManager.showListHostname(self)
+            listbox1.delete(0, tk.END)
+            str = "        Host_name"
+            listbox1.insert(tk.END, str)
+            sub_list = result[1:]
+            for item in sub_list:
+                text = f"             {item}"
+                listbox1.insert(tk.END, text)
 
         def showList(data):
             listbox.delete(0, tk.END)
@@ -47,7 +155,7 @@ class FirstPage(Tk):
             self,
             text="P2P SERVER ADMIN",
             font=("Helvetica", 25, "bold"),
-            width=40,
+            width=50,
             background="#57a1f8",
             anchor="center",
         )
@@ -74,7 +182,7 @@ class FirstPage(Tk):
             fg="black",
             command=discover,
         )
-        discoverBtn.place(x=300, y=90)
+        discoverBtn.place(x=650, y=90)
 
         list = tk.Frame(self, background="white")
         list.place(x=20, y=120)
@@ -95,8 +203,43 @@ class FirstPage(Tk):
         scroll.pack(side="right", fill="y")
         listbox.pack(side="left", padx=5, pady=5)
 
+        listBtn = Button(
+            self,
+            text="Refresh",
+            border=1,
+            width=12,
+            bg="#57a1f8",
+            fg="black",
+            command=updateListHostName,
+        )
+        listBtn.place(x=880, y=90)
+
+        list1 = tk.Frame(self, background="white")
+        list1.place(x=800, y=120)
+        scroll = ttk.Scrollbar(list1)
+        listbox1 = tk.Listbox(
+            list1,
+            yscrollcommand=scroll.set,
+            font=("Helvetica", 14),
+            width=15,
+            height=10,
+            selectbackground="#b8f89e",
+            selectforeground="black",
+            activestyle="none",
+            highlightthickness=0,
+            borderwidth=0,
+            selectmode="single",
+        )
+        scroll.pack(side="right", fill="y")
+        listbox1.pack(side="left", padx=5, pady=5)
+        ln = tkinter.Label(
+            self,
+            text="List Host Name:",
+            font=("Helvetica", 11, "bold"),
+        )
+        ln.place(x=800, y=60)
         self.mainloop()
 
 
 if __name__ == "__main__":
-    root = FirstPage()
+    root = Login()

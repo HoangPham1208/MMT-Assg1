@@ -75,6 +75,7 @@ ping <host_name>
         client_connection.send(pickle.dumps(discover_request))
         client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
         print(client_state)
+        return client_state
 
     def discover(self, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -111,10 +111,12 @@ ping <host_name>
 
     def ping(self, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect((Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
+        client_connection.connect(
+            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
+        )
         ping_request = ["ping", host_name]
         client_connection.send(pickle.dumps(ping_request))
-        
+
         ping_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
         # if (host_name != 'localhost') and (client_state == 'NOT_FOUND'):
         #     return 'The host name is not found in the server'
@@ -125,28 +127,6 @@ ping <host_name>
         command = ["ping", param, "4", ping_state[1]]
 
         return subprocess.call(command) == 0
-
-    # AN code ...
-    # def ping(self, host_name):
-    #     try:
-    #         # Establish a socket connection to the CentralizedServer
-    #         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_connection:
-    #             client_connection.connect(
-    #                 (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
-    #             )
-    #             ping_request = ["ping", host_name]
-    #             client_connection.send(pickle.dumps(ping_request))
-    #             client_state = pickle.loads(
-    #                 client_connection.recv(Environment.PACKET_SIZE)
-    #             )
-
-    #             param = "-n" if platform.system().lower() == "windows" else "-c"
-    #             command = ["ping", param, "4", host_name]
-
-    #             result = subprocess.call(command) == 0
-    #             return "Host is reachable" if result else "Host is not reachable"
-    #     except Exception as e:
-    #         return str(e)
 
 
 if __name__ == "__main__":

@@ -121,7 +121,8 @@ class HomePage(Tk):
     def __init__(self):
         super().__init__()
         self.title("P2P FileSharing")
-        self.geometry("1000x500")
+        self.geometry("1000x700")
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # discover
         def discover():
@@ -130,6 +131,17 @@ class HomePage(Tk):
                 result = []
                 result = AdminManager.discover(self, hname)
                 showList(result)
+                self.close = True
+
+        # ping
+        def ping():
+            pname = host_nameEntryi.get()
+            if pname != "":
+                result = []
+                result = AdminManager.ping(self, pname)
+                print(result)
+                listbox2.delete(0, tk.END)
+                listbox2.insert(tk.END, result)
                 self.close = True
 
         def updateListHostName():
@@ -238,7 +250,54 @@ class HomePage(Tk):
             font=("Helvetica", 11, "bold"),
         )
         ln.place(x=800, y=60)
+
+        lpi = tkinter.Label(
+            self,
+            text="Ping:",
+            font=("Helvetica", 11, "bold"),
+        )
+        lpi.place(x=20, y=360)
+
+        lbi = tk.Label(self, text="Host_name:", font=("Helvetica", 11))
+        lbi.place(x=20, y=390)
+        host_nameEntryi = ttk.Entry(self, font=("Helvetica", 11), width=15)
+        host_nameEntryi.place(x=110, y=390)
+
+        pingBtn = Button(
+            self,
+            text="Ping",
+            border=1,
+            width=12,
+            bg="#57a1f8",
+            fg="black",
+            command=ping,
+        )
+        pingBtn.place(x=650, y=390)
+
+        list2 = tk.Frame(self, background="white")
+        list2.place(x=20, y=420)
+        scroll = ttk.Scrollbar(list2)
+        listbox2 = tk.Listbox(
+            list2,
+            yscrollcommand=scroll.set,
+            font=("Helvetica", 14),
+            width=65,
+            height=10,
+            selectbackground="#b8f89e",
+            selectforeground="black",
+            activestyle="none",
+            highlightthickness=0,
+            borderwidth=0,
+            selectmode="single",
+        )
+        scroll.pack(side="right", fill="y")
+        listbox2.pack(side="left", padx=5, pady=5)
         self.mainloop()
+
+    def on_closing(self):
+        if tkinter.messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.destroy()
+            os._exit(0)
 
 
 if __name__ == "__main__":

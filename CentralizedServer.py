@@ -204,10 +204,6 @@ class CentralizedServer(Thread):
                 break
                 # print('Wrong command line')
 
-    def ping_host_name(self, host_name):
-        # Simulate the ping functionality in the server
-        return "Server: Pinging host name '{}'...".format(host_name)
-
     def list_host_name(self):
         host_names = [client["host_name"] for client in self.clientHost]
         return host_names
@@ -216,7 +212,11 @@ class CentralizedServer(Thread):
         # return peer_addr to peer want to ping
         for client_host in self.clientHost:
             if client_host["host_name"] == host_name:
-                clientData = [client_host['host_name'],client_host['host_addr'], client_host['host_port']]
+                clientData = [
+                    client_host["host_name"],
+                    client_host["host_addr"],
+                    client_host["host_port"],
+                ]
                 return clientData
         return "NOT_FOUND"
 

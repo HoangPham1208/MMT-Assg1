@@ -20,6 +20,8 @@ class Login(Tk):
         self.title("P2P FileSharing")
         self.geometry("450x500")
         self.configure(bg="#ffffff")
+        self.after(1000, lambda: self.auto_close())
+        self.close = False
 
         def show():
             passwd.configure(show="")
@@ -121,6 +123,13 @@ class Login(Tk):
 
         self.mainloop()
 
+    def auto_close(self):
+        if self.close:
+            self.close = -1  # stop sign
+            self.destroy()
+        elif self.close != -1:
+            self.after(1000, self.auto_close)
+
 
 class HomePage(Tk):
     def __init__(self):
@@ -151,10 +160,12 @@ class HomePage(Tk):
                     )
                     print("Không tìm thấy hostname!")
                 else:
-                    result = result.decode().split("\n")  # print result, meet \n -> split
+                    result = result.decode().split(
+                        "\n"
+                    )  # print result, meet \n -> split
                     # print result, meet \n -> split
                     listbox2.delete(0, tk.END)
-                    
+
                     for res in result:
                         listbox2.insert(tk.END, res)
                     self.close = True

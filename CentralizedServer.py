@@ -57,7 +57,6 @@ class CentralizedServer(Thread):
             request = pickle.loads(client.recv(Environment.PACKET_SIZE))
             # => [word_1, word_2,....]
             message_type = request[0]
-
             if message_type == "register":
                 print("Client", client_addr[0], "want to register to use the server")
                 self.semaphore.acquire()
@@ -217,7 +216,8 @@ class CentralizedServer(Thread):
         # return peer_addr to peer want to ping
         for client_host in self.clientHost:
             if client_host["host_name"] == host_name:
-                return client_host["host_addr"]
+                clientData = [client_host['host_name'],client_host['host_addr'], client_host['host_port']]
+                return clientData
         return "NOT_FOUND"
 
     def list_of_files(self, host_name):

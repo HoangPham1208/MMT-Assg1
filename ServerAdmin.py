@@ -19,7 +19,7 @@ class AdminManager:
             """
 Command line support: \n
 login <hostname> <password>
-showListHostname
+getList
 discover <host_name>
 ping <host_name>
 """
@@ -35,7 +35,7 @@ ping <host_name>
                 self.login(request[1], request[2])
             elif message_type == "discover":
                 self.discover(request[1])
-            elif message_type == "showListHostname":
+            elif message_type == "getList":
                 self.showListHostname()
             # elif message_type == "ping":
             #     print(self.ping(socket.gethostbyname(request[1])))
@@ -108,20 +108,20 @@ ping <host_name>
         client_connection.close()
         return client_state
 
-    def ping(self, host_name, port_name):
+    def ping(self, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_connection.connect((host_name, port_name))
-        ping_request = ["ping", host_name, port_name]
+        client_connection.connect((Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
+        ping_request = ["ping", host_name]
         client_connection.send(pickle.dumps(ping_request))
-        client_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
-
+        
+        ping_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
         # if (host_name != 'localhost') and (client_state == 'NOT_FOUND'):
         #     return 'The host name is not found in the server'
 
         param = "-n" if platform.system().lower() == "windows" else "-c"
 
         # Building the command. Ex: "ping -c 4 google.com"
-        command = ["ping", param, "4", host_name]
+        command = ["ping", param, "4", ping_state[1]]
 
         return subprocess.call(command) == 0
 

@@ -7,7 +7,7 @@ import platform
 import subprocess
 import Environment
 from P2PFetching import *
-
+from subprocess import check_output
 
 class AdminManager:
     def __init__(self):
@@ -125,8 +125,10 @@ ping <host_name>
 
         # Building the command. Ex: "ping -c 4 google.com"
         command = ["ping", param, "4", ping_state[1]]
+        out = f'Host_name: {ping_state[0]} , IP: {ping_state[1]} , Status: '.encode()
+        out += check_output(command)
 
-        return subprocess.call(command) == 0
+        return out
 
 
 if __name__ == "__main__":

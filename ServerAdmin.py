@@ -48,6 +48,8 @@ ping <host_name>
 
     def login(self, host_name, host_password):
         # check host_name
+        if host_name != 'admin':
+            return 'NOT ADMIN'
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
@@ -118,6 +120,8 @@ ping <host_name>
         client_connection.send(pickle.dumps(ping_request))
 
         ping_state = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
+        if ping_state == "NOT_FOUND":
+            return ping_state
         # if (host_name != 'localhost') and (client_state == 'NOT_FOUND'):
         #     return 'The host name is not found in the server'
 

@@ -45,7 +45,7 @@ fetch <file_name> <peer_port>
             elif message_type == "publish":
                 new_request = [
                     request[0],
-                    " ".join(request[1: len(request) - 1]),
+                    " ".join(request[1 : len(request) - 1]),
                     request[-1],
                 ]
                 self.publish(new_request[1], new_request[2])
@@ -82,8 +82,12 @@ fetch <file_name> <peer_port>
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
 
-        registered_stream = ["register", host_name,
-                             host_password, Environment.PEER_HOST]
+        registered_stream = [
+            "register",
+            host_name,
+            host_password,
+            Environment.PEER_HOST,
+        ]
         data_stream = pickle.dumps(registered_stream)
         client_connection.send(data_stream)
 
@@ -94,8 +98,7 @@ fetch <file_name> <peer_port>
             self.host_password = host_password
             self.peer_port = client_state[1]
             print(
-                "Your registration is success! Your port name is " +
-                str(self.peer_port)
+                "Your registration is success! Your port name is " + str(self.peer_port)
             )
         else:
             print(
@@ -137,8 +140,7 @@ fetch <file_name> <peer_port>
         client_connection.connect(
             (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
         )
-        published_stream = ["publish", copy_data[1],
-                            self.peer_port, copy_data[2]]
+        published_stream = ["publish", copy_data[1], self.peer_port, copy_data[2]]
         data_stream = pickle.dumps(published_stream)
         client_connection.send(data_stream)
         client_state = client_connection.recv(Environment.PACKET_SIZE)
@@ -164,20 +166,21 @@ fetch <file_name> <peer_port>
     def fetch(self, file_name, host_name):
         client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_connection.connect(
-            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT))
-        host_request = ['get_host', host_name]
+            (Environment.SERVER_HOST_NAME, Environment.SERVER_PORT)
+        )
+        host_request = ["get_host", host_name]
         client_connection.send(pickle.dumps(host_request))
-        host_info = pickle.loads(
-            client_connection.recv(Environment.PACKET_SIZE))
+        host_info = pickle.loads(client_connection.recv(Environment.PACKET_SIZE))
         client_connection.close()
-        
+
         # Handle if not get anything
         if host_info == "HOST_NOT_FOUND":
             return "HOST_NOT_FOUND"
-        try:                
+        try:
             client_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client_connection.connect(
-                (host_info['host_addr'], int(host_info['host_port'])))
+                (host_info["host_addr"], int(host_info["host_port"]))
+            )
         except:
             return "NOT_ONLINE"
         fetched_stream = ["fetch", file_name]
@@ -188,10 +191,10 @@ fetch <file_name> <peer_port>
         repo_path = repo_path.replace(os.path.sep, "/")
         # Handle for first time
         file_stream = client_connection.recv(Environment.PACKET_SIZE)
-        
-        if file_stream == "FILE_NOT_FOUND".encode(): # handle if file not found
+
+        if file_stream == "FILE_NOT_FOUND".encode():  # handle if file not found
             return "FILE_NOT_FOUND"
-        
+
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
         # Handle for duplicate file name
@@ -208,7 +211,7 @@ fetch <file_name> <peer_port>
                     )
                 else:
                     file_name = split_name[0] + f"_(1)." + split_name[1]
-                idx += 1    
+                idx += 1
         with open(os.path.join(repo_path, file_name), "wb") as download_file:
             while True:
                 file_stream = client_connection.recv(Environment.PACKET_SIZE)
@@ -290,8 +293,7 @@ def copy_file_to_directory(source_file, destination_directory, fname):
                     if match:
                         idx = int(match.group(1))
                         fname = (
-                            re.sub(r"\_\((\d+)\)$",
-                                   f"_({idx+1}).", split_name[0])
+                            re.sub(r"\_\((\d+)\)$", f"_({idx+1}).", split_name[0])
                             + split_name[1]
                         )
                     else:

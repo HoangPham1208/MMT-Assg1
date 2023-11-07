@@ -30,11 +30,10 @@ class CentralizedServer(Thread):
             "host_port",
             "host_live",
         ]
-        self.fileMetaData = ["host_name",
-                             "host_port", "file_name", "date_added"]
+        self.fileMetaData = ["host_name", "host_port", "file_name", "date_added"]
         admin_data = [
             "admin",
-            "1",
+            hashlib.sha256(str("1").encode("utf-8")).hexdigest(),
             Environment.SERVER_HOST_NAME,
             Environment.SERVER_PORT,
         ]
@@ -60,8 +59,7 @@ class CentralizedServer(Thread):
             message_type = request[0]
 
             if message_type == "register":
-                print("Client", client_addr[0],
-                      "want to register to use the server")
+                print("Client", client_addr[0], "want to register to use the server")
                 self.semaphore.acquire()
                 clientPort = 15000
                 if len(self.clientHost) != 1:
@@ -85,19 +83,16 @@ class CentralizedServer(Thread):
             elif message_type == "discover":
                 self.semaphore.acquire()
                 try:
-                    list_of_files = pickle.dumps(
-                        self.list_of_files(request[1]))
+                    list_of_files = pickle.dumps(self.list_of_files(request[1]))
                     client.send(list_of_files)
                 except FileNotFoundError:
                     client.send(
-                        pickle.dumps(
-                            "The server is not found your requested hostname")
+                        pickle.dumps("The server is not found your requested hostname")
                     )
                 self.semaphore.release()
 
             elif message_type == "publish":
-                print("Client with port", str(
-                    request[2]), "want to share file")
+                print("Client with port", str(request[2]), "want to share file")
                 self.semaphore.acquire()
                 # Check duplicate file name in server
                 file_name_at_server = request[1]
@@ -175,6 +170,14 @@ class CentralizedServer(Thread):
                 client.send(pickle.dumps(host_addr))
                 self.semaphore.release()
 
+            # An code
+            # elif message_type == "ping":
+            #     self.semaphore.acquire()
+            #     host_name_to_ping = request[1]
+            #     result = self.ping_host_name(host_name_to_ping)
+            #     client.send(pickle.dumps(result))
+            #     self.semaphore.release()
+
             elif message_type == "refresh":
                 self.semaphore.acquire()
                 list_files = self.list_of_files(request[1])
@@ -193,10 +196,22 @@ class CentralizedServer(Thread):
                 if not check:
                     client.send(pickle.dumps("HOST_NOT_FOUND"))
                 self.semaphore.release()
-
+            elif message_type == "list_host_name":
+                self.semaphore.acquire()
+                host_name_list = self.list_host_name()
+                client.send(pickle.dumps(host_name_list))
+                self.semaphore.release()
             else:
                 break
                 # print('Wrong command line')
+
+    def ping_host_name(self, host_name):
+        # Simulate the ping functionality in the server
+        return "Server: Pinging host name '{}'...".format(host_name)
+
+    def list_host_name(self):
+        host_names = [client["host_name"] for client in self.clientHost]
+        return host_names
 
     def search_client_host_addr(self, host_name):
         # return peer_addr to peer want to ping
@@ -223,8 +238,7 @@ class CentralizedServer(Thread):
                             file["file_name"],
                             file["date_added"],
                         ]
-                        file_lists.append(
-                            dict(zip(self.fileMetaData, file_data)))
+                        file_lists.append(dict(zip(self.fileMetaData, file_data)))
 
                 return file_lists
             raise FileNotFoundError("Hostname is not found")

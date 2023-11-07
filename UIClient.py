@@ -13,6 +13,8 @@ import os
 import Environment
 import sys
 import time
+
+
 # First Page
 class FirstPage(Tk):
     def __init__(self):
@@ -97,12 +99,15 @@ class RegistryFrame(Frame):
 
     def render(self):
         if self.fname == "login":
+
             def show():
-                passwd.configure(show='')
-                check.configure(command=hide, text='hide password')
+                passwd.configure(show="")
+                check.configure(command=hide, text="hide password")
+
             def hide():
-                passwd.configure(show='*')
-                check.configure(command=show, text='show password')
+                passwd.configure(show="*")
+                check.configure(command=show, text="show password")
+
             label_0 = Label(
                 self,
                 fg="#57a1f8",
@@ -111,7 +116,7 @@ class RegistryFrame(Frame):
                 font=("Microsoft YaHei UI Light", 25, "bold"),
             )
             label_0.place(x=140, y=20)
-            
+
             label_host = Label(self, text="Host name", bg="#fff", fg="#57a1f8")
             host = Entry(self, width=30, border=0)
             host.place(x=90, y=100)
@@ -128,8 +133,10 @@ class RegistryFrame(Frame):
             passwd.bind("<FocusIn>", lambda event: on_enter(event, "passwd"))
             passwd.bind("<FocusOut>", lambda event: on_leave(event, "passwd"))
             label_passwd.place(x=80, y=130)
-            
-            check = Checkbutton(self, text="Show my password", bg="#fff", fg="#57a1f8",command=show)
+
+            check = Checkbutton(
+                self, text="Show my password", bg="#fff", fg="#57a1f8", command=show
+            )
             check.pack(side="top", pady=180)
             Frame(self, width=295, height=2, bg="black").place(x=85, y=170)
 
@@ -207,9 +214,9 @@ class RegistryFrame(Frame):
             host_name.bind("<FocusOut>", lambda event: on_leave(event, "host_name"))
             Frame(self, width=295, height=2, bg="black").place(x=75, y=120)
             label_host_name.place(x=80, y=80)
-                        
+
             label_password = Label(self, text="Password", bg="#fff", fg="#57a1f8")
-            host_password = Entry(self, width=30, border=0, show = "*")
+            host_password = Entry(self, width=30, border=0, show="*")
             host_password.place(x=80, y=150)
             host_password.insert(0, "Host password")
             host_password.bind(
@@ -222,8 +229,10 @@ class RegistryFrame(Frame):
             Frame(self, width=295, height=2, bg="black").place(x=75, y=170)
             label_password.place(x=80, y=130)
 
-            label_re_password = Label(self, text="Retype Password", bg="#fff", fg="#57a1f8")
-            re_host_password = Entry(self, width=30, border=0, show = "*")
+            label_re_password = Label(
+                self, text="Retype Password", bg="#fff", fg="#57a1f8"
+            )
+            re_host_password = Entry(self, width=30, border=0, show="*")
             re_host_password.place(x=80, y=200)
             re_host_password.insert(0, "Host password")
             re_host_password.bind(
@@ -234,7 +243,7 @@ class RegistryFrame(Frame):
             )
             Frame(self, width=295, height=2, bg="black").place(x=75, y=220)
             label_re_password.place(x=80, y=180)
-            
+
             submit = Button(
                 self,
                 text="Register",
@@ -316,11 +325,6 @@ class HomePage(Tk):
             fname = fnameEntry.get()
             lname = lnameEntry.get()
             if lname != "" and fname != "":
-                # # check
-                # repo_path = os.path.join(os.getcwd(), "repo_2")
-                # repo_path = repo_path.replace(os.path.sep, "/")
-                # # if not os.path.exists(repo_path):
-
                 # # false
                 check = PeerManager.publish(self, lname, fname)
                 # true -> popup -> ???
@@ -331,7 +335,8 @@ class HomePage(Tk):
                     )
                 else:
                     tkinter.messagebox.showerror(
-                        "Error", "Your file path or file name is wrong! Please try again!"
+                        "Error",
+                        "Your file path or file name is wrong! Please try again!",
                     )
             else:
                 tkinter.messagebox.showerror("Error", "Missing value")
@@ -540,12 +545,3 @@ class HomePage(Tk):
 
 if __name__ == "__main__":
     root = FirstPage()
-    
-
-
-# def show_popup():
-#     response = messagebox.askquestion("Question", "Do you want to Rename?")
-#     if response == "yes":
-#         print("User chose 'Yes'")
-#     else:
-#         print("User chose 'No'")

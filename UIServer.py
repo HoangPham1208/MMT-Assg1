@@ -108,6 +108,11 @@ class Login(Tk):
                 if result == True:
                     self.close = True
                     HomePage()
+                elif result == "NOT ADMIN":
+                    tkinter.messagebox.showerror(
+                        title="WARNING",
+                        message="Tài khoản không có quyền truy cập!",
+                    )
                 else:
                     tkinter.messagebox.showerror(
                         title="Lỗi đăng nhập",
@@ -139,13 +144,20 @@ class HomePage(Tk):
             if pname != "":
                 result = []
                 result = AdminManager.ping(self, pname)
-                result = result.decode().split("\n")  # print result, meet \n -> split
-                # print result, meet \n -> split
-                listbox2.delete(0, tk.END)
-                
-                for res in result:
-                    listbox2.insert(tk.END, res)
-                self.close = True
+                if result == "NOT_FOUND":
+                    tkinter.messagebox.showerror(
+                        title="WARNING",
+                        message="Không tìm thấy hostname!",
+                    )
+                    print("Không tìm thấy hostname!")
+                else:
+                    result = result.decode().split("\n")  # print result, meet \n -> split
+                    # print result, meet \n -> split
+                    listbox2.delete(0, tk.END)
+                    
+                    for res in result:
+                        listbox2.insert(tk.END, res)
+                    self.close = True
 
         def updateListHostName():
             result = []
